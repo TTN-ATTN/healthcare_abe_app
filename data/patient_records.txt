@@ -1,0 +1,18 @@
+--- Patient Records ---
+
+Patient ID: P001
+Name: Alice Wonderland
+DOB: 1990-01-15
+Diagnosis: Common Cold
+Treatment: Rest and Fluids
+Medication: None
+
+Patient ID: P002
+Name: Bob The Builder
+DOB: 1985-11-22
+Diagnosis: Sprained Ankle
+Treatment: R.I.C.E. (Rest, Ice, Compression, Elevation)
+Medication: Ibuprofen
+
+--- End of Records ---
+
