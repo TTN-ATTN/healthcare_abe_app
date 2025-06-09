@@ -1,6 +1,0 @@
-username,first_name,last_name,dob,gender,contact_number,email,salt,hashed_password,role,department,clearance_level,employee_id
-doctor_dave,Dave,Smith,1980-05-15,Male,0962425842,23521090@gm.uit.edu.vn,558f841817083492f6a0fe787449fd7d,e0e0a296455e23578786b9b550ba2d3292458e8b3e488508a56482b01ca74bac,Doctor,Cardiology,Level 3,EMP001
-nurse_nancy,Nancy,Jones,1992-08-23,Female,0962425842,23521090@gm.uit.edu.vn,2471d0fb7f3c28f247ed7fd95b1fa4c4,a0ac1c05a6503baea973d9095afedd67034497f69d79a83455f35a580831ba15,Nurse,Pediatrics,Level 2,EMP002
-research_rob,Rob,Brown,1985-03-12,Male,0962425842,23521090@gm.uit.edu.vn,a155e0ba697cb5b4b5719c4dbaee3f9c,5d5ac59666abc9d57f4fc3a213764d1136b6ba5899adcdf740755863c69e2859,Researcher,Oncology Research,Level 2,EMP003
-admin_andy,Andy,White,1975-12-09,Male,0962425842,23521090@gm.uit.edu.vn,eacf260a5a85305402f725d1aa4e8c3d,39ea27ec8618bd177bcf9b89fa8fc07d97e2e3861808ad8db8753d227d91ceb0,Admin,IT,Level 4,EMP004
-account_anna,Anna,Davis,1990-11-30,Female,0962425842,23521090@gm.uit.edu.vn,353dfbdf26e122b59a246d4a7e921d13,40386264bdb5f1bfc29d88b74946e9f3f05e3e5e8e46086b4ccd8f8a16d6f45e,Accountant,Finance,Level 1,EMP005
