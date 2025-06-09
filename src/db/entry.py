@@ -7,7 +7,7 @@ SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from user_management.user_service import add_user, ROLES, create_user_file_if_not_exists
+from db.scripts import add_user, ROLES, create_user_file_if_not_exists
 
 DEFAULT_CONTACT_NUMBER = "0962425842"
 DEFAULT_EMAIL = "23521090@gm.uit.edu.vn"

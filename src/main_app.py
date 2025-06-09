@@ -13,7 +13,7 @@ print(f"Data Directory: {DATA_DIR}")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from user_management.user_service import verify_user, create_user_file_if_not_exists, USER_DATA_FILE
+from db.scripts import verify_user, create_user_file_if_not_exists, USER_DATA_FILE
 
 class HealthcareApp:
     def __init__(self, root=None):
