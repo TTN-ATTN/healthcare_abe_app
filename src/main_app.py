@@ -1,9 +1,8 @@
-#!/usr/bin/env python3.11
 import tkinter as tk
 from tkinter import messagebox, ttk
 import sys
 import os
-import csv
+from db.scripts import authenticate_user, DatabaseManager, DATABASE_FILE
 
 SRC_DIR = os.path.dirname(os.path.abspath(__file__)) 
 DATA_DIR = os.path.join(os.path.dirname(SRC_DIR), "data")
@@ -12,8 +11,6 @@ print(f"Data Directory: {DATA_DIR}")
 
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
-
-from db.scripts import verify_user, create_user_file_if_not_exists, USER_DATA_FILE
 
 class HealthcareApp:
     def __init__(self, root=None):
@@ -30,7 +27,8 @@ class HealthcareApp:
         # This will hold our current active window after login
         self.current_window = None
         
-        create_user_file_if_not_exists()
+        # Initialize the database manager
+        self.db_manager = DatabaseManager(DATABASE_FILE)
 
         # Configure styles
         style = ttk.Style(self.root)
@@ -63,16 +61,7 @@ class HealthcareApp:
 
         login_frame.columnconfigure(1, weight=1)
 
-    def get_user_attributes(self, username):
-        try:
-            with open(USER_DATA_FILE, "r", newline="") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if row["username"] == username:
-                        return row
-        except FileNotFoundError:
-            print("User data file not found.")
-        return None
+
 
     def attempt_login(self):
         username = self.username_entry.get()
@@ -82,10 +71,12 @@ class HealthcareApp:
             messagebox.showerror("Login Failed", "Username and Password cannot be empty.")
             return
 
-        role = verify_user(username, password)
+        user_data = authenticate_user(username, password)
 
-        if role:
-            user_attributes = self.get_user_attributes(username)
+        if user_data:
+            role = user_data["role"]
+            # The attributes are now directly available in user_data["profile"]
+            user_attributes = user_data["profile"]
             self.root.withdraw()  # Hide the login window instead of destroying it
             self.open_role_window(username, role, user_attributes)
         else:
@@ -133,7 +124,6 @@ class HealthcareApp:
         if role == "Doctor":
             ttk.Button(content_frame, text="View Patient Records", 
                       command=self.view_patient_records).grid(row=0, column=0, pady=5)
-            ttk.Button(content_frame, text="Manage Appointments (Placeholder)").grid(row=1, column=0, pady=5)
         elif role == "Researcher":
             ttk.Button(content_frame, text="Access Research Data", 
                       command=self.access_research_data).grid(row=0, column=0, pady=5)
@@ -194,7 +184,7 @@ class HealthcareApp:
             # If root window was destroyed, create a new one
             self.root = tk.Tk()
             self.__init__(self.root)
-            self.root.mainloop()
+
 
 if __name__ == "__main__":
     main_root = tk.Tk()
