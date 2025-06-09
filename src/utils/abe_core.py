@@ -15,12 +15,6 @@ class SecureAES:
     """Enhanced AES-GCM implementation with proper key management"""
     
     def __init__(self, key: bytes = None):
-        """
-        Initialize with optional key (generates random 256-bit key if not provided)
-        
-        Args:
-            key: Optional 32-byte AES key. Must be kept secret.
-        """
         if key:
             if len(key) != 32:
                 raise ValueError("AES key must be 32 bytes (256 bits)")
@@ -29,15 +23,6 @@ class SecureAES:
             self.key = os.urandom(32)
     
     def encrypt(self, plaintext: Union[str, bytes]) -> bytes:
-        """
-        Encrypt data using AES-GCM (authenticated encryption)
-        
-        Args:
-            plaintext: Data to encrypt (str or bytes)
-            
-        Returns:
-            bytes: Encrypted data in format: IV (16B) + ciphertext + tag (16B)
-        """
         if isinstance(plaintext, str):
             plaintext = plaintext.encode("utf-8")
         
@@ -55,18 +40,6 @@ class SecureAES:
         return iv + ciphertext + encryptor.tag
     
     def decrypt(self, ciphertext: bytes) -> bytes:
-        """
-        Decrypt AES-GCM encrypted data
-        
-        Args:
-            ciphertext: Encrypted data in format: IV (16B) + ciphertext + tag (16B)
-            
-        Returns:
-            bytes: Decrypted plaintext
-            
-        Raises:
-            InvalidTag: If authentication fails (tampered data)
-        """
         if len(ciphertext) < 32:  # IV (16) + min 1 byte + tag (16)
             raise ValueError("Invalid ciphertext length")
             
@@ -88,17 +61,8 @@ class SecureAES:
         """Generate a new random 256-bit AES key"""
         return os.urandom(32)
 
-class AttributeBasedEncryptionSystem:
-    """
-    Practical ABE implementation with healthcare-specific enhancements
-    
-    Note: This is a simplified version that simulates ABE concepts using
-    hybrid encryption (AES for data + RSA for policy enforcement).
-    A real ABE system would use pairing-based cryptography.
-    """
-    
+class ABESystem:
     def __init__(self):
-        """Initialize the ABE system with master parameters"""
         self.master_key = os.urandom(32)
         self._setup_crypto_material()
         self.attribute_universe = {
@@ -108,7 +72,6 @@ class AttributeBasedEncryptionSystem:
         }
     
     def _setup_crypto_material(self):
-        """Generate cryptographic keys for the system"""
         # In real ABE, this would involve pairing parameters
         self.private_key = rsa.generate_private_key(
             public_exponent=65537,
@@ -118,31 +81,12 @@ class AttributeBasedEncryptionSystem:
         self.public_key = self.private_key.public_key()
         
     def get_public_parameters(self) -> bytes:
-        """
-        Get serialized public parameters for encryption
-        
-        Returns:
-            bytes: Serialized public key in PEM format
-        """
         return self.public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
     
     def generate_user_key(self, attributes: Dict[str, str]) -> bytes:
-        """
-        Generate a user secret key based on attributes
-        
-        Args:
-            attributes: Dictionary of attribute types and values
-                        e.g., {"role": "doctor", "department": "cardiology"}
-                        
-        Returns:
-            bytes: Serialized key data containing derived key material
-            
-        Raises:
-            ValueError: If invalid attributes are provided
-        """
         # Validate attributes against universe
         for attr_type, attr_value in attributes.items():
             if attr_type not in self.attribute_universe:
@@ -181,20 +125,6 @@ class AttributeBasedEncryptionSystem:
         return json.dumps(key_package).encode()
     
     def encrypt_data(self, plaintext: Union[str, bytes], policy: str) -> bytes:
-        """
-        Encrypt data under an attribute-based policy
-        
-        Args:
-            plaintext: Data to encrypt (str or bytes)
-            policy: Access policy in simple format
-                    e.g., "role:doctor AND department:cardiology"
-                    
-        Returns:
-            bytes: Serialized ciphertext package
-            
-        Raises:
-            ValueError: For invalid policy format
-        """
         if isinstance(plaintext, str):
             plaintext = plaintext.encode("utf-8")
             
@@ -244,19 +174,6 @@ class AttributeBasedEncryptionSystem:
         return json.dumps(ciphertext_package).encode()
     
     def decrypt_data(self, ciphertext: bytes, user_key: bytes) -> bytes:
-        """
-        Decrypt data if user attributes satisfy the policy
-        
-        Args:
-            ciphertext: Encrypted data package from encrypt_data()
-            user_key: User's secret key from generate_user_key()
-            
-        Returns:
-            bytes: Decrypted plaintext
-            
-        Raises:
-            ValueError: If decryption fails (policy not satisfied, tampered data, etc.)
-        """
         try:
             # 1. Parse ciphertext package
             ct_pkg = json.loads(ciphertext.decode())
@@ -301,17 +218,6 @@ class AttributeBasedEncryptionSystem:
             raise ValueError(f"Decryption failed: {str(e)}")
     
     def _parse_policy(self, policy: str) -> List[Tuple[str, str]]:
-        """
-        Parse simple policy string into attribute requirements
-        
-        Supports:
-        - Single attribute: "role:doctor"
-        - AND conditions: "role:doctor AND department:cardiology"
-        - OR conditions: "role:doctor OR role:researcher"
-        
-        Returns:
-            List of (attribute_type, attribute_value) tuples
-        """
         # Normalize policy string
         policy = re.sub(r"\s+", " ", policy.strip()).lower()
         
@@ -333,16 +239,6 @@ class AttributeBasedEncryptionSystem:
         return (parts[0].strip(), parts[1].strip())
     
     def _check_policy_compliance(self, policy: str, user_attrs: Dict[str, str]) -> bool:
-        """
-        Check if user attributes satisfy the policy
-        
-        Args:
-            policy: Policy string
-            user_attrs: Dictionary of user attributes
-            
-        Returns:
-            bool: True if policy is satisfied
-        """
         policy_attrs = self._parse_policy(policy)
         
         if " and " in policy.lower():
@@ -398,7 +294,7 @@ class AttributeBasedEncryptionSystem:
 if __name__ == "__main__":
     print("=== Healthcare ABE System Demo ===")
     
-    abe = AttributeBasedEncryptionSystem()
+    abe = ABESystem()
     public_params = abe.get_public_parameters()
     print("System initialized with public parameters")
     
