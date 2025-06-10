@@ -1,6 +1,7 @@
+# cloud_storage/server/app.py
 from flask import Flask
-from admin_api import admin_api
-from hospital_api import hospital_api
+from user_api import user_api
+from patient_api import patient_api
 import os
 
 app = Flask(__name__)
@@ -8,8 +9,8 @@ app.secret_key = os.urandom(32)
 app.config["SESSION_PERMANENT"] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 
-app.register_blueprint(admin_api)
-app.register_blueprint(hospital_api)
+app.register_blueprint(user_api)
+app.register_blueprint(patient_api)
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=True)

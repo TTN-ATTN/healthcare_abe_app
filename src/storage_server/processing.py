@@ -36,7 +36,7 @@ class TPM:
     
 class SelfAES:
     def __init__(self):
-        self.key = TPM.decrypt('./certs/aeskey.enc')[:32]
+        self.key = TPM.decrypt('./keys/aeskey.enc')[:32]
 
     def encrypt(self, data):
         if type(data) != type(b''):
@@ -62,17 +62,17 @@ class ABE:
     
     def getMasterPublicKey(self):
         aes = SelfAES()
-        with open('./certs/pk_key', 'rb') as f:
+        with open('./keys/pk_key', 'rb') as f:
             pk = aes.decrypt(f.read())
             
             return pk
     
     def genDecryptKey(self, attribute: list):
         aes = SelfAES()
-        with open('./certs/pk_key', 'rb') as f:
+        with open('./keys/pk_key', 'rb') as f:
             tmp = aes.decrypt(f.read())
             self.pk = bytesToObject(tmp, self.group)
-        with open('./certs/mk_key', 'rb') as f:
+        with open('./keys/mk_key', 'rb') as f:
             tmp = aes.decrypt(f.read())
             self.mk = bytesToObject(tmp, self.group)
 
@@ -82,7 +82,7 @@ class ABE:
     
 class SelfJWT:
     def __init__(self):
-        with open("./certs/jwtkey_priv.pem.enc", "rb") as f:
+        with open("./keys/jwtkey_priv.pem.enc", "rb") as f:
             encrypted_key = f.read()
             aes = SelfAES()
             self.key = aes.decrypt(encrypted_key)
