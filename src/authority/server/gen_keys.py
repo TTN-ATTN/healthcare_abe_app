@@ -21,7 +21,7 @@ def get_keys():
         return "Invalid request", 400
     try:
         attributes = data['attributes']
-        # Tao decryption key dua tren cac thuoc tinh cua nguoi dung va gui den nguoi dung
+        # Tao decryption key dua tren cac thuoc tinh cua nguoi dung va gui d    en nguoi dung
         dk_key = cpabe.keygen(master_public_key, master_secret_key, attributes)
 
 

@@ -3,6 +3,7 @@ import jwt
 import datetime
 import os
 
+
 auth_api = Blueprint('auth_api', __name__)
 
 SECRET_KEY = os.urandom(24).hex() # Nen luu tru secret key nay trong mot file an toan
