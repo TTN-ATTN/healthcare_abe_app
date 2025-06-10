@@ -15,8 +15,7 @@ app.register_blueprint(login_api)
 app.register_blueprint(auth_api)
 app.register_blueprint(gen_keys_api)
 
-@app.before_first_request
-def initialize():
+with app.app_context():
     create_sameple_user()
 
 if __name__ == "__main__":
