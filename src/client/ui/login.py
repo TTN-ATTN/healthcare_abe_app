@@ -41,4 +41,4 @@ class LoginUI:
     def on_login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-        self.login_callback(username, password, "default_role")
+        self.login_callback(username, password)

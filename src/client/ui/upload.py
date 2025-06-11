@@ -2,10 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 
 class UploadUI:
-    def __init__(self, parent_frame, upload_callback, browse_callback):
+    def __init__(self, parent_frame, upload_callback):
         self.parent = parent_frame
         self.upload_callback = upload_callback
-        self.browse_callback = browse_callback
         self.setup_ui()
         
     def setup_ui(self):
@@ -15,11 +14,16 @@ class UploadUI:
         upload_frame = ttk.Frame(self.parent)
         upload_frame.pack(expand=True, fill="both", padx=10, pady=10)
         
-        ttk.Label(upload_frame, text="User ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(upload_frame, text="Patient ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.user_id_entry = ttk.Entry(upload_frame, width=30)
         self.user_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
-        ttk.Label(upload_frame, text="Record Type").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        # Name field
+        ttk.Label(upload_frame, text="Name").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.name_entry = ttk.Entry(upload_frame, width=30)
+        self.name_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+        
+        ttk.Label(upload_frame, text="Record Type").grid(row=2, column=0, padx=5, pady=5, sticky="w")
         self.record_type_var = tk.StringVar()
         self.record_type_dropdown = ttk.Combobox(
             upload_frame, 
@@ -28,15 +32,8 @@ class UploadUI:
             state="readonly",
             width=27
         )
-        self.record_type_dropdown.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+        self.record_type_dropdown.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
         self.record_type_dropdown.current(0)
-        
-        ttk.Label(upload_frame, text="Select File").grid(row=2, column=0, padx=5, pady=5, sticky="w")
-        self.file_path_var = tk.StringVar()
-        file_entry = ttk.Entry(upload_frame, textvariable=self.file_path_var, width=25)
-        file_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
-        browse_button = ttk.Button(upload_frame, text="Browse", command=self.on_browse)
-        browse_button.grid(row=2, column=2, padx=5, pady=5)
 
         upload_button = ttk.Button(upload_frame, text="Upload Records", command=self.on_upload)
         upload_button.grid(row=3, column=0, columnspan=3, pady=10)
@@ -50,17 +47,12 @@ class UploadUI:
         params = {
             'user_id': self.user_id_entry.get(),
             'record_type': self.record_type_var.get(),
-            'file_path': self.file_path_var.get()
         }
         self.upload_callback(params)
-    
-    def on_browse(self):
-        self.browse_callback(self.file_path_var)
     
     def clear_fields(self):
         self.user_id_entry.delete(0, tk.END)
         self.record_type_dropdown.current(0)
-        self.file_path_var.set("")
 
 
 class UpdateUI:

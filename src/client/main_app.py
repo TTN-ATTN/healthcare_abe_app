@@ -3,41 +3,77 @@ from tkinter import messagebox
 from ui.login import LoginUI
 from ui.dashboard import DashboardUI
 from ui.search import SearchUI
-from ui.view import ViewUI
 from ui.upload import UploadUI
+import requests
+import json
+
+AUTHORITY_SERVER = "http://127.0.0.1:5000"
+STORAGE_SERVER = "http://127.0.0.1:8000"
 
 class HealthcareApp:
     def __init__(self):
         self.root = tk.Tk()
         self.current_user = None
         self.current_role = None
+        self.current_token = None
         self.current_ui = None
-        self.dashboard_ui = None  # Initialize dashboard_ui
+        self.dashboard_ui = None
         self.show_login()
     
     def show_login(self):
         self.clear_current_ui()
         self.login_ui = LoginUI(self.root, self.handle_login)
     
-    def handle_login(self, username, password, role):
-        if self.authenticate_user(username, password, role):
-            self.current_user = username
-            self.current_role = role
-            self.show_dashboard()
-        else:
-            messagebox.showerror("Login Failed", "Invalid credentials")
+    def handle_login(self, username, password):
+        try:
+            login_response = requests.post(
+                f"{AUTHORITY_SERVER}/login",
+                data={'username': username, 'password': password},
+                timeout=5
+            )
+            
+            if login_response.status_code == 200:
+                user_data = login_response.json()
+                self.current_user = username
+                self.current_role = self.determine_role(user_data.get('attributes', []))
+                
+                # Get JWT token
+                token_response = requests.post(
+                    f"{AUTHORITY_SERVER}/token",
+                    json={
+                        'user_id': user_data.get('user_id'),
+                        'attributes': user_data.get('attributes', [])
+                    },
+                    headers={'Content-Type': 'application/json'},
+                    timeout=5
+                )
+                
+                if token_response.status_code == 200:
+                    self.current_token = token_response.json().get('token')
+                    self.show_dashboard()
+                else:
+                    messagebox.showerror("Login Failed", "Token generation failed")
+            else:
+                messagebox.showerror("Login Failed", "Invalid credentials")
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Connection Error", f"Failed to connect to server: {str(e)}")
+        except Exception as e:
+            messagebox.showerror("Error", f"An unexpected error occurred: {str(e)}")
     
-    def authenticate_user(self, username, password, role):
-        return username and password and role
+    def determine_role(self, attributes):
+        """Determine the highest privilege role from attributes"""
+        role_priority = ['admin', 'doctor', 'nurse', 'researcher', 'patient']
+        for role in role_priority:
+            if role in attributes:
+                return role
+        return 'patient'  # default role
     
     def show_dashboard(self):
         """Display the main dashboard"""
         self.clear_current_ui()
         
-        # Define button callbacks for dashboard
         button_callbacks = {
             'search': self.show_search,
-            'view': self.show_view,
             'upload': self.show_upload,
             'logout': self.handle_logout
         }
@@ -52,7 +88,6 @@ class HealthcareApp:
             self.current_ui = self.dashboard_ui
         except Exception as e:
             messagebox.showerror("Dashboard Error", f"Failed to load dashboard: {str(e)}")
-            print(f"Dashboard creation error: {e}")  # For debugging
     
     def show_search(self):
         """Display the search interface"""
@@ -64,21 +99,6 @@ class HealthcareApp:
                 )
             except Exception as e:
                 messagebox.showerror("Search UI Error", f"Failed to load search interface: {str(e)}")
-                print(f"Search UI error: {e}")  # For debugging
-        else:
-            messagebox.showerror("Error", "Dashboard not properly initialized")
-    
-    def show_view(self):
-        """Display the view records interface"""
-        if self.dashboard_ui and hasattr(self.dashboard_ui, 'content_frame'):
-            try:
-                self.view_ui = ViewUI(
-                    self.dashboard_ui.content_frame, 
-                    self.handle_view
-                )
-            except Exception as e:
-                messagebox.showerror("View UI Error", f"Failed to load view interface: {str(e)}")
-                print(f"View UI error: {e}")  # For debugging
         else:
             messagebox.showerror("Error", "Dashboard not properly initialized")
     
@@ -89,76 +109,71 @@ class HealthcareApp:
                 self.upload_ui = UploadUI(
                     self.dashboard_ui.content_frame, 
                     self.handle_upload,
-                    self.handle_browse
                 )
             except Exception as e:
                 messagebox.showerror("Upload UI Error", f"Failed to load upload interface: {str(e)}")
-                print(f"Upload UI error: {e}")  # For debugging
         else:
             messagebox.showerror("Error", "Dashboard not properly initialized")
     
     def handle_search(self, search_params):
         """Handle search functionality"""
         try:
-            user_id = search_params.get('user_id', '')
-            name = search_params.get('name', '')
-            record_type = search_params.get('record_type', '')
-            results = self.perform_search(user_id, name, record_type)
-            messagebox.showinfo("Search Results", f"Found {len(results)} records")
+            if not self.current_token:
+                messagebox.showerror("Error", "Not authenticated")
+                return
+                
+            # Prepare request to storage server
+            headers = {
+                'Authorization': f'Bearer {self.current_token}',
+                'Content-Type': 'application/json'
+            }
             
-        except Exception as e:
-            messagebox.showerror("Search Error", f"Search failed: {str(e)}")
-    
-    def handle_view(self, view_params):
-        try:
-            user_id = view_params.get('user_id', '')
-            record_type = view_params.get('record_type', '')
-            records = self.get_user_records(user_id, record_type)
-            messagebox.showinfo("View Records", f"Displaying records for user: {user_id}")
+            # Convert search parameters to query string
+            params = {
+                'user_id': search_params.get('user_id', ''),
+                'name': search_params.get('name', ''),
+                'record_type': search_params.get('record_type', 'health_record')
+            }
             
+            response = requests.get(
+                f"{STORAGE_SERVER}/api/{params['record_type']}",
+                headers=headers,
+                params=params,
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                messagebox.showinfo("Search Results", 
+                                  f"Found {data.get('count', 0)} records")
+                # Here you would typically display the results in the UI
+            else:
+                messagebox.showerror("Search Failed", 
+                                   f"Server returned {response.status_code}: {response.text[:200]}")
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Connection Error", f"Failed to connect to server: {str(e)}")
         except Exception as e:
-            messagebox.showerror("View Error", f"Failed to load records: {str(e)}")
+            messagebox.showerror("Error", f"An unexpected error occurred: {str(e)}")
     
     def handle_upload(self, upload_params):
         """Handle file upload functionality"""
-        try:
-            user_id = upload_params.get('user_id', '')
-            record_type = upload_params.get('record_type', '')
-            file_path = upload_params.get('file_path', '')
-            success = self.upload_file(user_id, record_type, file_path)
-            
-            if success:
-                messagebox.showinfo("Upload Success", "File uploaded successfully")
-            else:
-                messagebox.showerror("Upload Failed", "Failed to upload file")
-                
-        except Exception as e:
-            messagebox.showerror("Upload Error", f"Upload failed: {str(e)}")
-    
-    def handle_browse(self):
-        """Handle file browse functionality for upload"""
-        try:
-            from tkinter import filedialog
-            
-            file_path = filedialog.askopenfilename(
-                title="Select file to upload",
-                filetypes=[
-                    ("All files", "*.*"),
-                    ("PDF files", "*.pdf"),
-                    ("Image files", "*.jpg *.jpeg *.png *.gif"),
-                    ("Document files", "*.doc *.docx *.txt")
-                ]
-            )
-            
-            return file_path
-        except Exception as e:
-            messagebox.showerror("Browse Error", f"Failed to open file browser: {str(e)}")
-            return ""
+        messagebox.showinfo("Info", "Upload feature not implemented yet")
     
     def handle_logout(self):
+        try:
+            if self.current_token:
+                requests.post(
+                    f"{AUTHORITY_SERVER}/logout",
+                    headers={'Authorization': f'Bearer {self.current_token}'},
+                    timeout=5
+                )
+        except:
+            pass  # Even if logout fails, we'll clear the session
+        
         self.current_user = None
         self.current_role = None
-        self.dashboard_ui = None  # Reset dashboard_ui
+        self.current_token = None
+        self.dashboard_ui = None  
         self.show_login()
     
     def clear_current_ui(self):
@@ -168,26 +183,12 @@ class HealthcareApp:
         except Exception as e:
             print(f"Error clearing UI: {e}")
     
-    # Database/Backend methods (implement according to your needs)
-    def perform_search(self, user_id, name, record_type):
-        # Placeholder implementation
-        return []
-    
-    def get_user_records(self, user_id, record_type):
-        # Placeholder implementation
-        return []
-    
-    def upload_file(self, user_id, record_type, file_path):
-        # Placeholder implementation
-        return True
-    
     def run(self):
         try:
             self.root.mainloop()
         except Exception as e:
             print(f"Application error: {e}")
 
-# Application entry point
 if __name__ == "__main__":
     try:
         app = HealthcareApp()

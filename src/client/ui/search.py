@@ -15,7 +15,7 @@ class SearchUI:
         search_frame.pack(expand=True, fill="both", padx=10, pady=10)
         
         # User ID field
-        ttk.Label(search_frame, text="User ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(search_frame, text="Patient ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.user_id_entry = ttk.Entry(search_frame, width=30)
         self.user_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         

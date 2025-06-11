@@ -38,10 +38,6 @@ class DashboardUI:
                   command=self.button_callbacks['search']).grid(
                       row=0, column=0, padx=10, pady=10, ipadx=10, ipady=5)
         
-        ttk.Button(button_frame, text="VIEW", 
-                  command=self.button_callbacks['view']).grid(
-                      row=0, column=1, padx=10, pady=10, ipadx=10, ipady=5)
-        
         ttk.Button(button_frame, text="UPLOAD", 
                   command=self.button_callbacks['upload']).grid(
                       row=0, column=2, padx=10, pady=10, ipadx=10, ipady=5)
