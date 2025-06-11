@@ -97,8 +97,18 @@ def get_health_records(current_user):
         # Patients can only see their own records
         if 'patient' in user_attributes and 'doctor' not in user_attributes and 'nurse' not in user_attributes:
             query = {'patient_id': current_user['user_id']}
-        else:
-            query = {}
+        elif 'doctor' in user_attributes or 'nurse' in user_attributes:
+            if 'patient_name' in request.args:
+                query = {'patient_name': request.args.get('patient_name')}
+            elif 'patient_id' in request.args:
+                query = {'patient_id': request.args.get('patient_id')}
+            elif 'patient_name' and 'patient_id' in request.args:
+                query = {
+                    'patient_name': request.args.get('patient_name'),
+                    'patient_id': request.args.get('patient_id')
+                }
+            else:
+                query = {}
         
         records = list(collection.find(query))
         
@@ -133,6 +143,7 @@ def create_health_record(current_user):
         new_record = {
             'record_id': str(uuid.uuid4()),  # Generate unique record ID
             'patient_id': data['patient_id'],
+            'patient_name': data['patient_name'],
             'diagnosis': data['diagnosis'],
             'treatment': data['treatment'],
             'notes': data.get('notes', ''),
@@ -230,6 +241,7 @@ def create_sample_data(current_user):
             {
                 'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
+                'patient_name': 'Josh',
                 'diagnosis': 'Hypertension',
                 'treatment': 'ACE inhibitor medication',
                 'notes': 'Monitor blood pressure weekly',
@@ -240,6 +252,7 @@ def create_sample_data(current_user):
             {
                 'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
+                'patient_name': 'John',
                 'diagnosis': 'Type 2 Diabetes',
                 'treatment': 'Metformin 500mg twice daily',
                 'notes': 'Check blood glucose regularly',
@@ -254,6 +267,7 @@ def create_sample_data(current_user):
             {
                 'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
+                'patient_name': 'Dave',
                 'medication': 'Lisinopril 10mg',
                 'dosage': 'Once daily',
                 'prescribed_by': '1001',

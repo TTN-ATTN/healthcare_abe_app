@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Individual Component Tester
-Test specific components separately for detailed debugging
-"""
-
 import requests
 import jwt
 import json

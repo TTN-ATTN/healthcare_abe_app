@@ -18,7 +18,8 @@ def DBConnect():
     except ServerSelectionTimeoutError:
         client = MongoClient("mongodb://localhost:27017/")
     
-    client.drop_database("storage_server")  # Clear existing database for fresh start
+    # Clear existing database if needed
+    # client.drop_database("storage_server")  
     db = client["storage_server"]
     collection = db['user_data']
     
