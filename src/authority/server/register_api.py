@@ -29,7 +29,7 @@ def register():
     data = {
         'username': username,
         'password': Hash.hash_password(password),
-        'enc_attribute': enc_attribute
+        'attribute': enc_attribute
     }
     
     response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/register_user'), json=data)
