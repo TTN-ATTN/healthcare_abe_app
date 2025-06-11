@@ -9,7 +9,7 @@ import os
 from process import MyAES, ABE
 from Crypto.PublicKey import ECC
 
-aes_key = os.urandom(64)
+aes_key = os.urandom(32)
 
 with open("./keystore/aes.key", "wb") as f:
     f.write(aes_key)

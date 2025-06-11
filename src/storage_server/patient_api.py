@@ -23,6 +23,7 @@ def DBConnect():
 
 db = DBConnect()
 
+
 def serialize_record(record):
     """Helper function to serialize record data for JSON response"""
     if record is None:
