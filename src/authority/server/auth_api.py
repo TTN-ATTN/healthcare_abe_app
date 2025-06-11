@@ -5,7 +5,7 @@ import datetime
 import os
 from process import MyAES, ABE, Hash, MyJWT
 from ast import literal_eval
-
+import requests
 auth_api = Blueprint('auth_api', __name__)
 
 @auth_api.route('/get_keys', methods=['POST'])
@@ -32,23 +32,22 @@ def get_keys():
 
 @auth_api.route('/token', methods=['POST'])
 def get_token():
-    # if 'user_id' not in session:
-    #     return "Unauthorized", 401
-    # if "username" not in session:
-    #     return "Unauthorized", 401
-    data = request.json
-    if not data:
-        return "Invalid request", 400
-    
-    user_id = data['user_id']
-    attributes = str(data['attributes'])
-    
-    if not user_id:
-        return "Missing user_id", 400
-    if not attributes:
-        return "Missing attributes", 400
-   
-    myjwt = MyJWT()
-    token = myjwt.encode(attributes, user_id)
-    
-    return jsonify({"token": token}), 200
+    if session.get("user_id", "") != "" and session.get("username", "") != "":
+        data = request.json
+        if not data:
+            return "Invalid request", 400
+        
+        user_id = data['user_id']
+        attributes = str(data['attributes'])
+        
+        if not user_id:
+            return "Missing user_id", 400
+        if not attributes:
+            return "Missing attributes", 400
+        
+        myjwt = MyJWT()
+        token = myjwt.encode(attributes, user_id)
+        
+        return jsonify({"token": token}), 200
+    else: 
+        return "Please login first", 401

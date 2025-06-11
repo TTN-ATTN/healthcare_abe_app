@@ -3,6 +3,7 @@ from process import Hash, MyAES
 from urllib.parse import urljoin
 import json
 import requests
+import logging
 # Rehandle finish
 CLOUD_STORAGE_URL = "http://127.0.0.1:8000"
 login_api = Blueprint('login_api', __name__)
@@ -29,6 +30,9 @@ def login():
     session['user_id'] = user_info['user_id']
     session['username'] = username
     
+    print(f"Session user_id: {session['user_id']}")
+    print(f"Session username: {session['username']}")
+    logging.info(f"User {session['username']} logged in with user_id {session['user_id']}")
     if session['username'] != 'admin':
         attributes = bytes.fromhex(user_info['attributes'])
         aes = MyAES()
@@ -41,7 +45,7 @@ def login():
     if (session['attributes'] == 'admin'):
         session['username'] = 'admin'
     else:
-        return jsonify({'user_id': session['user_id'], 'attributes': attributes['ATTR']}), 200
+        return jsonify({'user_id': user_info['user_id'], 'attributes': attributes['ATTR']}), 200
         
 
 
