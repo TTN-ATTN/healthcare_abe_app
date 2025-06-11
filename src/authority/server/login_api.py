@@ -1,8 +1,21 @@
 # authority/server/login_api.py
 from flask import Blueprint, request, jsonify, session
 from process import authenticate_user
+from bson import ObjectId
 
 login_api = Blueprint('login_api', __name__)
+
+def serialize_user(user):
+    """Convert MongoDB user document to JSON-serializable format"""
+    if user:
+        serialized_user = {}
+        for key, value in user.items():
+            if isinstance(value, ObjectId):
+                serialized_user[key] = str(value)
+            else:
+                serialized_user[key] = value
+        return serialized_user
+    return None
 
 @login_api.route('/login', methods=['POST'])
 def login():
@@ -15,9 +28,10 @@ def login():
     user = authenticate_user(username, password)
     
     if user:
-        user['user_id'] = str(user['user_id'])  # Convert ObjectId to string
-        session['user'] = user
-        return jsonify(user), 200
+        # Serialize the user object to handle ObjectId
+        serialized_user = serialize_user(user)
+        session['user'] = serialized_user
+        return jsonify(serialized_user), 200
     else:
         return "Invalid username or password", 401
     
