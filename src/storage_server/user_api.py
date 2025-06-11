@@ -18,8 +18,7 @@ def DBConnect():
     except ServerSelectionTimeoutError:
         client = MongoClient("mongodb://localhost:27017/")
     
-    # Clear existing database if needed
-    # client.drop_database("storage_server")  
+    client.drop_database("storage_server")  # Clear existing database for fresh start
     db = client["storage_server"]
     collection = db['user_data']
     
@@ -36,7 +35,7 @@ def DBConnect():
             'user_id': '0001',
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
-            'attributes': ['admin'],
+            'attribute': ['admin'],
             'role': 'administrator'
         }
         collection.insert_one(admin_user)
@@ -57,6 +56,25 @@ def serialize_user(user):
         del user['_id']
     
     return user
+
+
+@user_api.route('/get_user_info', method=['POST'])
+def get_user_info():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        
+        user_info = users_collection.find_one({'username': username})
+        
+        if user_info:
+            response = {
+                'user_id': user_info['user_id'],
+                'username': user_info['username'],
+                'hash_passwd': user_info['hash_password'],
+                'attribute': user_info['attribue'],
+            }
+            return jsonify(response), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
 
 @user_api.route('/users', methods=['GET'])
 @check_token
@@ -186,3 +204,4 @@ def reset_users(current_user):
         
     except Exception as e:
         return jsonify({'error': 'Failed to reset users', 'message': str(e)}), 500
+

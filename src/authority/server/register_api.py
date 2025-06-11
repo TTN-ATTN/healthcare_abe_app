@@ -18,6 +18,7 @@ def register():
     username = request.form.get('username')
     password = request.form.get('password')
     attribute = request.form.get('attribute')
+    user_id = request.form.get('user_id')
     
     if (not username) or (not password) or (not attribute):
         return "Missing username, password or attribute", 400
@@ -29,10 +30,11 @@ def register():
     data = {
         'username': username,
         'password': Hash.hash_password(password),
+        'user_id': user_id,
         'attribute': enc_attribute
     }
     
-    response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/register_user'), json=data)
+    response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/user'), json=data)
 
     if response.status_code == 200:
         return "User registered successfully", 201

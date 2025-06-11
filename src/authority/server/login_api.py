@@ -15,7 +15,7 @@ def login():
     if (not username) or (not password):
         return "Missing username or password", 400
     
-    response = request.get(urljoin(CLOUD_STORAGE_URL, '/api/get_user_info'), params={'username': username})
+    response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/get_user_info'), params={'username': username})
     
     if (response.status_code != 200):
         return "User not found", 404
