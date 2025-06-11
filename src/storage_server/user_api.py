@@ -186,20 +186,3 @@ def reset_users(current_user):
         
     except Exception as e:
         return jsonify({'error': 'Failed to reset users', 'message': str(e)}), 500
-
-@user_api.route('/profile', methods=['GET'])
-@check_token
-def get_profile(current_user):
-    """Get current user's profile"""
-    try:
-        user = users_collection.find_one({'user_id': current_user['user_id']}, {'hash_password': 0})
-        
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-        
-        serialized_user = serialize_user(user)
-        
-        return jsonify({'profile': serialized_user, 'token_info': current_user}), 200
-        
-    except Exception as e:
-        return jsonify({'error': 'Failed to retrieve profile', 'message': str(e)}), 500

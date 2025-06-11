@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 from ast import literal_eval
 from bson import ObjectId
+from abac import checker
 import datetime
 
 patient_api = Blueprint('patient_api', __name__)
@@ -20,7 +21,6 @@ def DBConnect():
     db = client["hospital"]
     return db
 
-# Initialize database connection
 db = DBConnect()
 
 def serialize_record(record):
@@ -34,24 +34,24 @@ def serialize_record(record):
     
     return record
 
-# Access control policies aligned with authority server attributes
-VIEW_POLICIES = {
-    'health_record': ['doctor', 'nurse', 'patient'],
-    'medicine_record': ['doctor', 'pharmacist', 'patient'],
-    'financial_record': ['accountant'],
-    'research_record': ['doctor', 'researcher'],
-}
-
-UPDATE_POLICIES = {
-    'health_record': ['doctor', 'nurse'],
-    'medicine_record': ['doctor', 'pharmacist'],
-    'financial_record': ['accountant'],
-    'research_record': ['researcher', 'doctor'],
+POLICIES = {
+    'view': {
+        'health_record': "doctor or nurse or patient",
+        'medicine_record': "doctor or pharmacist or patient",
+        'financial_record': "accountant",
+        'research_record': "doctor or researcher",
+    },
+    'update': {
+        'health_record': "doctor or nurse",
+        'medicine_record': "doctor or pharmacist",
+        'financial_record': "accountant",
+        'research_record': "researcher or doctor",
+    }
 }
 
 def check_record_access(record_type, action='view'):
     """
-    Check if user has access to specific record type and action
+    Check if user has access to specific record type and action using ABAC
     """
     def decorator(f):
         def decorated_function(*args, **kwargs):
@@ -60,22 +60,20 @@ def check_record_access(record_type, action='view'):
                 return jsonify({'error': 'User information not found'}), 401
             
             user_attributes = current_user.get("attributes", [])
-
-            if action == 'view':
-                required_attrs = VIEW_POLICIES.get(record_type, [])
-            elif action == 'update':
-                required_attrs = UPDATE_POLICIES.get(record_type, [])
-            else:
-                return jsonify({'error': 'Invalid action'}), 400
             
-            # Check if user has required attributes
-            has_access = any(attr in user_attributes for attr in required_attrs)
+            # Get the appropriate policy for the action and record type
+            policy = POLICIES.get(action, {}).get(record_type)
+            if not policy:
+                return jsonify({'error': 'Invalid policy configuration'}), 500
+            
+            # Use ABAC checker to verify access
+            has_access = checker(user_attributes, policy.split(' or '))
             
             if not has_access:
                 return jsonify({
                     'error': 'Access denied!',
                     'message': f'Insufficient privileges for {action} on {record_type}',
-                    'required_attributes': required_attrs,
+                    'required_policy': policy,
                     'user_attributes': user_attributes
                 }), 403
             
