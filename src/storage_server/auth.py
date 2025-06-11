@@ -35,7 +35,9 @@ def check_token(f):
             }), 401
 
         try:
-            data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            with open('./keystore/public_key.pem', 'rb') as f:
+                public_key = f.read()
+            data = jwt.decode(token, public_key, algorithms=['EdDSA'])
 
             user_attributes = literal_eval(data['attributes']) if isinstance(data['attributes'], str) else data['attributes']
             
@@ -66,17 +68,6 @@ def check_token(f):
             }), 401
 
     return decorated
-
-def verify_token_with_authority(token):
-    try:
-        response = requests.post(
-            f"{AUTHORITY_SERVER_URL}/verify_token",
-            json={'token': token},
-            timeout=5
-        )
-        return response.status_code == 200
-    except:
-        return False
 
 def extract_user_attributes(token):
     """
