@@ -32,7 +32,7 @@ def get_token():
     
     token = jwt.encode({
         'user_id': data['_id'],
-        'attributes': str(data.get('attribute')), # Nen có một giải pháp an toàn để lưu trữ attributes đó là enc nó lại
+        'attributes': str(data.get('attributes')), # Nen có một giải pháp an toàn để lưu trữ attributes đó là enc nó lại
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
     

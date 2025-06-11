@@ -23,9 +23,9 @@ class ABAC:
         self.parser = PolicyParser()
     
     # Parse the policy and check if the attributes satisfy the policy
-    def check(self, attribute: list, policy: str):
+    def check(self, attributes: list, policy: str):
         tree = self.parser.parse(policy)
-        check = self.parser.prune(tree, attribute)
+        check = self.parser.prune(tree, attributes)
         return check
     
     # Convert the policy and attributes to their corresponding integer values
@@ -35,9 +35,9 @@ class ABAC:
         return policy
     
     # Convert the attributes to their corresponding integer values
-    def convertAttribute(self, attribute):
+    def convertAttribute(self, attributes):
         converted_attr = []
-        for a in attribute:
+        for a in attributes:
             for k in self.attr_dict:
                 if a == k:
                     converted_attr.append(self.attr_dict[k]) 

@@ -20,49 +20,55 @@ def create_sameple_user():
                 "username": "doctor1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "1001",
-                "attribute": ["doctor", "cardiology"]
+                "attributes": ["doctor", "cardiology"]
             },
             {
                 "username": "neuro1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "1002",
-                "attribute": ["neurology_doctor"]
+                "attributes": ["neurology_doctor"]
             },
             {
                 "username": "nurse1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "2001",
-                "attribute": ["nurse", "emergency"]
+                "attributes": ["nurse", "emergency"]
             },
             {
                 "username": "head_nurse1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "2002",
-                "attribute": ["head_nurse"]
+                "attributes": ["head_nurse"]
             },
             {
                 "username": "patient1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "3001",
-                "attribute": ["patient"]
+                "attributes": ["patient"]
             },
             {
                 "username": "researcher1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "4001",
-                "attribute": ["researcher", "cardiology"]
+                "attributes": ["researcher", "cardiology"]
             },
             {
                 "username": "accountant1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "5001",
-                "attribute": ["accountant"]
+                "attributes": ["accountant"]
             },
             {
                 "username": "pharmacist1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "6001",
-                "attribute": ["pharmacist"]
+                "attributes": ["pharmacist"]
+            },
+            {
+                "username": "admin",
+                "password": hashlib.sha256("password123".encode()).hexdigest(),
+                "ID": "0001",
+                "attributes": ["admin"]
             }
         ]
         users_collection.insert_many(sample_users)

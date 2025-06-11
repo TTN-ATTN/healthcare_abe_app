@@ -48,7 +48,7 @@ class TestLoginAPI:
             
             # Print user data for debugging
             print(f"  User ID: {user_data.get('_id')}")
-            print(f"  Attributes: {user_data.get('attribute', [])}")
+            print(f"  Attributes: {user_data.get('attributes', [])}")
     
     def test_login_missing_username(self):
         """Test login with missing username"""
@@ -151,14 +151,14 @@ class TestLoginAPI:
             print(f" User Data Retrieved:")
             print(f"   Username: {user_data.get('username')}")
             print(f"   User ID: {user_data.get('_id')}")
-            print(f"   Attributes: {user_data.get('attribute', [])}")
+            print(f"   Attributes: {user_data.get('attributes', [])}")
             
             # Test token generation
             token_response = requests.post(
                 self.token_url,
                 json={
                     '_id': user_data['_id'],
-                    'attribute': user_data.get('attribute', [])
+                    'attributes': user_data.get('attributes', [])
                 },
                 headers={'Content-Type': 'application/json'}
             )
@@ -246,7 +246,7 @@ class TestLoginAPI:
         print(f"   ✓ Login successful")
         print(f"    User: {user_data.get('username')}")
         print(f"    ID: {user_data.get('_id')}")
-        print(f"    Attributes: {user_data.get('attribute', [])}")
+        print(f"    Attributes: {user_data.get('attributes', [])}")
         
         # Step 2: Get token
         print("\n Step 2: Generate JWT Token")
@@ -254,7 +254,7 @@ class TestLoginAPI:
             self.token_url,
             json={
                 '_id': user_data['_id'],
-                'attribute': user_data.get('attribute', [])
+                'attributes': user_data.get('attributes', [])
             },
             headers={'Content-Type': 'application/json'},
             cookies=session_cookies
@@ -326,7 +326,7 @@ def test_user_attributes():
         
         if response.status_code == 200:
             user_data = response.json()
-            user_attributes = user_data.get('attribute', [])
+            user_attributes = user_data.get('attributes', [])
             
             print(f"   Expected: {expected_attrs}")
             print(f"   Actual: {user_attributes}")
@@ -334,9 +334,9 @@ def test_user_attributes():
             # Check if expected attributes are present
             for attr in expected_attrs:
                 if attr in user_attributes:
-                    print(f"   Attribute '{attr}' found")
+                    print(f"   attributes '{attr}' found")
                 else:
-                    print(f"   Attribute '{attr}' missing")
+                    print(f"   attributes '{attr}' missing")
         else:
             print(f"   Failed to login: {response.status_code}")
 
@@ -372,7 +372,7 @@ def test_all_user_tokens():
                 f"{BASE_URL}/token",
                 json={
                     '_id': user_data['_id'],
-                    'attribute': user_data.get('attribute', [])
+                    'attributes': user_data.get('attributes', [])
                 },
                 headers={'Content-Type': 'application/json'}
             )
@@ -384,7 +384,7 @@ def test_all_user_tokens():
                 print(f"   ✓ Token generated successfully")
                 print(f"   User: {user_data.get('username')}")
                 print(f"   ID: {user_data.get('_id')}")
-                print(f"   Attributes: {user_data.get('attribute', [])}")
+                print(f"   Attributes: {user_data.get('attributes', [])}")
                 print(f"   Token: {token}")
                 
                 # Quick decode

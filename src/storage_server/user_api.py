@@ -34,7 +34,7 @@ def DBConnect():
             'user_id': 1,
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
-            'attributes': ['admin', 'super_user'],
+            'attributes': ['admin'],
             'role': 'administrator'
         }
         collection.insert_one(admin_user)
