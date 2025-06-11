@@ -41,6 +41,11 @@ class DashboardUI:
         ttk.Button(button_frame, text="UPLOAD", 
                   command=self.button_callbacks['upload']).grid(
                       row=0, column=2, padx=10, pady=10, ipadx=10, ipady=5)
+                  
+        if self.role == 'admin':
+            ttk.Button(button_frame, text="ADD USERS", 
+                    command=self.button_callbacks['add_user']).grid(
+                        row=0, column=3, padx=10, pady=10, ipadx=10, ipady=5)
 
         # Logout button
         logout_frame = ttk.Frame(main_frame)

@@ -4,6 +4,7 @@ from ui.login import LoginUI
 from ui.dashboard import DashboardUI
 from ui.search import SearchUI
 from ui.upload import UploadUI
+from ui.add_user import AddUserUI
 import requests
 import json
 
@@ -66,7 +67,7 @@ class HealthcareApp:
         for role in role_priority:
             if role in attributes:
                 return role
-        return 'patient'  # default role
+        return 'patient'  
     
     def show_dashboard(self):
         """Display the main dashboard"""
@@ -75,7 +76,8 @@ class HealthcareApp:
         button_callbacks = {
             'search': self.show_search,
             'upload': self.show_upload,
-            'logout': self.handle_logout
+            'logout': self.handle_logout,
+            'add_user': self.show_add_user if self.current_role == 'admin' else None
         }
         
         try:
@@ -114,6 +116,31 @@ class HealthcareApp:
                 messagebox.showerror("Upload UI Error", f"Failed to load upload interface: {str(e)}")
         else:
             messagebox.showerror("Error", "Dashboard not properly initialized")
+    
+    def show_add_user(self):
+        """Display the add user interface for admin"""
+        if self.dashboard_ui and hasattr(self.dashboard_ui, 'content_frame'):
+            try:
+                self.add_user_ui = AddUserUI(
+                    self.dashboard_ui.content_frame, 
+                    self.handle_add_user
+                )
+            except Exception as e:
+                messagebox.showerror("Add User Error", f"Failed to load add user interface: {str(e)}")
+        else:
+            messagebox.showerror("Error", "Dashboard not properly initialized")
+
+    def handle_add_user(self, user_data):
+        """Handle adding a new user"""
+        try:
+            if not self.current_token:
+                messagebox.showerror("Error", "Not authenticated")
+                return
+                
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Connection Error", f"Failed to connect to server: {str(e)}")
+        except Exception as e:
+            messagebox.showerror("Error", f"An unexpected error occurred: {str(e)}")
     
     def handle_search(self, search_params):
         """Handle search functionality"""
