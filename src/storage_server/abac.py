@@ -9,7 +9,7 @@ class ABAC:
         'accountant': 4,
         'researcher': 5,
         'pharmacist': 6,
-        'administrator': 7,
+        'admin': 7,
     }
     
     '''

@@ -25,7 +25,7 @@ def admin_create_users():
         return
     
     user_data = login_response.json()
-    print(f"    User ID: {user_data.get('user_id', 'Not found')}")
+    print(f"    User user_id: {user_data.get('user_id', 'Not found')}")
     print(f"    Attributes: {user_data.get('attributes', [])}")
     
     # Step 2: Get Token
@@ -63,7 +63,7 @@ def admin_create_users():
         print(f"    Retrieved {data.get('count', 0)} users")
         users = data.get('users', [])
         for user in users:
-            print(f"      User: {user.get('username')} (ID: {user.get('user_id')}, Attributes: {user.get('attributes')})")
+            print(f"      User: {user.get('username')} (user_id: {user.get('user_id')}, Attributes: {user.get('attributes')})")
     else:
         print(f" ❌ Storage access failed: {storage_response.text[:200]}")
         return
@@ -157,7 +157,7 @@ def test_token_decode():
         # Decode without verification to see contents
         decoded = jwt.decode(token, options={"verify_signature": False})
         print(" ✅ Token decoded successfully!")
-        print(f"    User ID: {decoded.get('user_id')}")
+        print(f"    User user_id: {decoded.get('user_id')}")
         print(f"    Attributes: {decoded.get('attributes')}")
         print(f"    Expires: {datetime.fromtimestamp(decoded.get('exp', 0))}")
     except Exception as e:

@@ -125,10 +125,10 @@ def create_health_record(current_user):
         if not all(field in data for field in required_fields):
             return jsonify({'error': 'Missing required fields', 'required': required_fields}), 400
         
-        # Create new health record with unique ID
+        # Create new health record with unique user_id
         import uuid
         new_record = {
-            'record_id': str(uuid.uuid4()),  # Generate unique record ID
+            'record_id': str(uuid.uuid4()),  # Generate unique record user_id
             'patient_id': data['patient_id'],
             'patient_name': data['patient_name'],
             'diagnosis': data['diagnosis'],
@@ -199,7 +199,7 @@ def get_research_records(current_user):
             # Serialize record
             serialized_record = serialize_record(record)
             
-            # Anonymize patient ID for research purposes
+            # Anonymize patient user_id for research purposes
             if 'patient_id' in serialized_record:
                 serialized_record['anonymized_patient_id'] = hash(serialized_record['patient_id']) % 10000
                 del serialized_record['patient_id']

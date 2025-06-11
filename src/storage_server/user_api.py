@@ -35,7 +35,7 @@ def DBConnect():
             'user_id': '0001',
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
-            'attribute': ['admin'],
+            'attributes': ['admin'],
             'role': 'administrator'
         }
         collection.insert_one(admin_user)
@@ -70,7 +70,7 @@ def get_user_info():
                 'user_id': user_info['user_id'],
                 'username': user_info['username'],
                 'hash_passwd': user_info['hash_password'],
-                'attribute': user_info['attribue'],
+                'attributes': user_info['attribue'],
             }
             return jsonify(response), 200
         else:
@@ -99,7 +99,7 @@ def get_all_users(current_user):
 @user_api.route('/user/<user_id>', methods=['GET'])
 @check_token
 def get_user_by_id(user_id, current_user):
-    """Get specific user by ID"""
+    """Get specific user by user_id"""
     try:
         # Users can view their own profile, admins can view any profile
         if current_user['user_id'] != user_id and 'admin' not in current_user['attributes']:
