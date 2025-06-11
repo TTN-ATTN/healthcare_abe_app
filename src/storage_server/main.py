@@ -1,5 +1,5 @@
 # storage_server/main.py
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from user_api import user_api
 from patient_api import patient_api
 import os
@@ -17,21 +17,7 @@ app.register_blueprint(patient_api, url_prefix='/api')
 
 @app.route('/')
 def home():
-    """Storage Server Status"""
-    return jsonify({
-        'service': 'Healthcare Storage Server',
-        'status': 'running',
-        'port': 8000,
-        'version': '1.0.0',
-        'endpoints': {
-            'user_management': '/api/users',
-            'patient_records': '/api/health_records',
-            'medicine_records': '/api/medicine_records',
-            'research_records': '/api/research_records',
-        },
-        'authentication': 'JWT tokens from Authority Server (port 5000)',
-        'note': 'All endpoints require valid JWT token from authority server'
-    })
+    return redirect('/health')
 
 @app.route('/health')
 def health_check():

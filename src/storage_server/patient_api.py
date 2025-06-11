@@ -23,6 +23,17 @@ def DBConnect():
 # Initialize database connection
 db = DBConnect()
 
+def serialize_record(record):
+    """Helper function to serialize record data for JSON response"""
+    if record is None:
+        return None
+    
+    # Remove MongoDB's default _id field since we use our own IDs
+    if '_id' in record:
+        del record['_id']
+    
+    return record
+
 # Access control policies aligned with authority server attributes
 VIEW_POLICIES = {
     'health_record': ['doctor', 'nurse', 'patient'],
@@ -91,13 +102,12 @@ def get_health_records(current_user):
         
         records = list(collection.find(query))
         
-        for record in records:
-            if 'user_id' in record:
-                record['user_id'] = str(record['user_id'])
+        # Serialize records for JSON response
+        serialized_records = [serialize_record(record) for record in records]
         
         return jsonify({
-            'records': records,
-            'count': len(records),
+            'records': serialized_records,
+            'count': len(serialized_records),
             'accessed_by': current_user['user_id'],
             'attributes': user_attributes
         }), 200
@@ -118,8 +128,10 @@ def create_health_record(current_user):
         if not all(field in data for field in required_fields):
             return jsonify({'error': 'Missing required fields', 'required': required_fields}), 400
         
-        # Create new health record
+        # Create new health record with unique ID
+        import uuid
         new_record = {
+            'record_id': str(uuid.uuid4()),  # Generate unique record ID
             'patient_id': data['patient_id'],
             'diagnosis': data['diagnosis'],
             'treatment': data['treatment'],
@@ -130,11 +142,15 @@ def create_health_record(current_user):
         }
         
         result = collection.insert_one(new_record)
-        new_record['user_id'] = str(result.inserted_id)
+        
+        # Prepare response record (remove MongoDB _id)
+        response_record = new_record.copy()
+        if '_id' in response_record:
+            del response_record['_id']
         
         return jsonify({
             'message': 'Health record created successfully',
-            'record': new_record
+            'record': response_record
         }), 201
         
     except Exception as e:
@@ -157,14 +173,12 @@ def get_medicine_records(current_user):
         
         records = list(collection.find(query))
         
-        # Convert ObjectId to string
-        for record in records:
-            if 'user_id' in record:
-                record['user_id'] = str(record['user_id'])
+        # Serialize records for JSON response
+        serialized_records = [serialize_record(record) for record in records]
         
         return jsonify({
-            'records': records,
-            'count': len(records),
+            'records': serialized_records,
+            'count': len(serialized_records),
             'accessed_by': current_user['user_id']
         }), 200
         
@@ -181,18 +195,22 @@ def get_research_records(current_user):
         
         records = list(collection.find({}))
         
-        # Convert ObjectId to string and anonymize patient data for research
+        # Process records and anonymize patient data for research
+        processed_records = []
         for record in records:
-            if 'user_id' in record:
-                record['user_id'] = str(record['user_id'])
+            # Serialize record
+            serialized_record = serialize_record(record)
+            
             # Anonymize patient ID for research purposes
-            if 'patient_id' in record:
-                record['anonymized_patient_id'] = hash(record['patient_id']) % 10000
-                del record['patient_id']
+            if 'patient_id' in serialized_record:
+                serialized_record['anonymized_patient_id'] = hash(serialized_record['patient_id']) % 10000
+                del serialized_record['patient_id']
+            
+            processed_records.append(serialized_record)
         
         return jsonify({
-            'records': records,
-            'count': len(records),
+            'records': processed_records,
+            'count': len(processed_records),
             'accessed_by': current_user['user_id'],
             'note': 'Patient data has been anonymized for research purposes'
         }), 200
@@ -207,8 +225,10 @@ def create_sample_data(current_user):
     """Create sample patient data for testing"""
     try:
         # Sample health records
+        import uuid
         health_records = [
             {
+                'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
                 'diagnosis': 'Hypertension',
                 'treatment': 'ACE inhibitor medication',
@@ -218,6 +238,7 @@ def create_sample_data(current_user):
                 'record_type': 'health_record'
             },
             {
+                'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
                 'diagnosis': 'Type 2 Diabetes',
                 'treatment': 'Metformin 500mg twice daily',
@@ -231,6 +252,7 @@ def create_sample_data(current_user):
         # Sample medicine records
         medicine_records = [
             {
+                'record_id': str(uuid.uuid4()),
                 'patient_id': '3001',
                 'medication': 'Lisinopril 10mg',
                 'dosage': 'Once daily',

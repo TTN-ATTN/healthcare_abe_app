@@ -18,7 +18,8 @@ def DBConnect():
     except ServerSelectionTimeoutError:
         client = MongoClient("mongodb://localhost:27017/")
     
-    db = client["storage_server"]  # Different DB name from authority
+    client.drop_database("storage_server")  # Clear existing database for fresh start
+    db = client["storage_server"]
     collection = db['user_data']
     
     # Create unique index on username
@@ -28,10 +29,10 @@ def DBConnect():
         pass
     
     # Create admin user if doesn't exist
-    admin_user = collection.find_one({'username': 'admin'})
+    admin_user = collection.find_one({'user_id': '0001'})  # Use string for consistency
     if admin_user is None:
         admin_user = {
-            'user_id': 1,
+            'user_id': '0001',
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
             'attributes': ['admin'],
@@ -45,6 +46,17 @@ def DBConnect():
 db = DBConnect()
 users_collection = db['user_data']
 
+def serialize_user(user):
+    """Helper function to serialize user data for JSON response"""
+    if user is None:
+        return None
+    
+    # Remove MongoDB's default _id field since we use our own user_id
+    if '_id' in user:
+        del user['_id']
+    
+    return user
+
 @user_api.route('/users', methods=['GET'])
 @check_token
 @check_permission(['admin'])
@@ -54,13 +66,11 @@ def get_all_users(current_user):
         users = list(users_collection.find({}, {'hash_password': 0}))  # Exclude passwords
         
         # Convert ObjectId to string for JSON serialization
-        for user in users:
-            if 'user_id' in user:
-                user['user_id'] = str(user['user_id'])
+        serialized_users = [serialize_user(user) for user in users]
         
         return jsonify({
-            'users': users,
-            'count': len(users),
+            'users': serialized_users,
+            'count': len(serialized_users),
             'requested_by': current_user['user_id']
         }), 200
         
@@ -81,10 +91,9 @@ def get_user_by_id(user_id, current_user):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        if 'user_id' in user:
-            user['user_id'] = str(user['user_id'])
+        serialized_user = serialize_user(user)
         
-        return jsonify({'user': user}), 200
+        return jsonify({'user': serialized_user}), 200
         
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve user', 'message': str(e)}), 500
@@ -123,10 +132,14 @@ def create_user(current_user):
         }
         
         result = users_collection.insert_one(new_user)
-        new_user['user_id'] = str(result.inserted_id)
-        del new_user['hash_password']  # Don't return password
         
-        return jsonify({'message': 'User created successfully', 'user': new_user}), 201
+        # Prepare response (exclude password and remove _id)
+        response_user = new_user.copy()
+        del response_user['hash_password']  # Don't return password
+        if '_id' in response_user:
+            del response_user['_id']  # Remove MongoDB's _id, we use user_id
+        
+        return jsonify({'message': 'User created successfully', 'user': response_user}), 201
         
     except Exception as e:
         return jsonify({'error': 'Failed to create user', 'message': str(e)}), 500
@@ -153,14 +166,14 @@ def delete_user(user_id, current_user):
 def reset_users(current_user):
     """Reset all users - admin only"""
     try:
-        result = users_collection.delete_many({'user_id': {'$ne': 1}})
+        result = users_collection.delete_many({'user_id': {'$ne': '0001'}})
         
         if result.deleted_count == 0:
             return jsonify({'message': 'No users to reset'}), 200
         
         # Recreate the admin user
         admin_user = {
-            'user_id': 1,
+            'user_id': '0001',
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
             'attributes': ['admin', 'super_user'],
@@ -183,10 +196,9 @@ def get_profile(current_user):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        if 'user_id' in user:
-            user['user_id'] = str(user['user_id'])
+        serialized_user = serialize_user(user)
         
-        return jsonify({'profile': user, 'token_info': current_user}), 200
+        return jsonify({'profile': serialized_user, 'token_info': current_user}), 200
         
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve profile', 'message': str(e)}), 500
