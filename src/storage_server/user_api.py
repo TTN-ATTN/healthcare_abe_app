@@ -55,8 +55,8 @@ def get_all_users(current_user):
         
         # Convert ObjectId to string for JSON serialization
         for user in users:
-            if '_id' in user:
-                user['_id'] = str(user['_id'])
+            if 'user_id' in user:
+                user['user_id'] = str(user['user_id'])
         
         return jsonify({
             'users': users,
@@ -81,8 +81,8 @@ def get_user_by_id(user_id, current_user):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        if '_id' in user:
-            user['_id'] = str(user['_id'])
+        if 'user_id' in user:
+            user['user_id'] = str(user['user_id'])
         
         return jsonify({'user': user}), 200
         
@@ -123,7 +123,7 @@ def create_user(current_user):
         }
         
         result = users_collection.insert_one(new_user)
-        new_user['_id'] = str(result.inserted_id)
+        new_user['user_id'] = str(result.inserted_id)
         del new_user['hash_password']  # Don't return password
         
         return jsonify({'message': 'User created successfully', 'user': new_user}), 201
@@ -183,8 +183,8 @@ def get_profile(current_user):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        if '_id' in user:
-            user['_id'] = str(user['_id'])
+        if 'user_id' in user:
+            user['user_id'] = str(user['user_id'])
         
         return jsonify({'profile': user, 'token_info': current_user}), 200
         

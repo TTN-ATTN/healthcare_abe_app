@@ -92,14 +92,14 @@ def get_health_records(current_user):
         records = list(collection.find(query))
         
         for record in records:
-            if '_id' in record:
-                record['_id'] = str(record['_id'])
+            if 'user_id' in record:
+                record['user_id'] = str(record['user_id'])
         
         return jsonify({
             'records': records,
             'count': len(records),
             'accessed_by': current_user['user_id'],
-            'user_type': user_attributes
+            'attributes': user_attributes
         }), 200
         
     except Exception as e:
@@ -130,7 +130,7 @@ def create_health_record(current_user):
         }
         
         result = collection.insert_one(new_record)
-        new_record['_id'] = str(result.inserted_id)
+        new_record['user_id'] = str(result.inserted_id)
         
         return jsonify({
             'message': 'Health record created successfully',
@@ -159,8 +159,8 @@ def get_medicine_records(current_user):
         
         # Convert ObjectId to string
         for record in records:
-            if '_id' in record:
-                record['_id'] = str(record['_id'])
+            if 'user_id' in record:
+                record['user_id'] = str(record['user_id'])
         
         return jsonify({
             'records': records,
@@ -183,8 +183,8 @@ def get_research_records(current_user):
         
         # Convert ObjectId to string and anonymize patient data for research
         for record in records:
-            if '_id' in record:
-                record['_id'] = str(record['_id'])
+            if 'user_id' in record:
+                record['user_id'] = str(record['user_id'])
             # Anonymize patient ID for research purposes
             if 'patient_id' in record:
                 record['anonymized_patient_id'] = hash(record['patient_id']) % 10000
@@ -202,7 +202,7 @@ def get_research_records(current_user):
 
 @patient_api.route('/create_sample_data', methods=['POST'])
 @check_token
-@check_permission(['admin', 'doctor'])
+@check_permission(['admin'])
 def create_sample_data(current_user):
     """Create sample patient data for testing"""
     try:
