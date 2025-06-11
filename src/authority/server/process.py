@@ -2,81 +2,77 @@
 from pymongo import MongoClient
 import hashlib
 import os
-
-DB_URL = "mongodb://localhost:27017/"
-
-client = MongoClient(DB_URL)
-db = client['healthcare']
-users_collection = db['users']
-
-def create_sameple_user():
-    if 'users' in db.list_collection_names():
-        db['users'].drop()
-        print("Users collection dropped successfully.")
-
-    if users_collection.count_documents({}) == 0:
-        sample_users = [
-            {
-                "username": "doctor1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "1001",
-                "attributes": ["doctor", "cardiology"]
-            },
-            {
-                "username": "neuro1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "1002",
-                "attributes": ["neurology_doctor"]
-            },
-            {
-                "username": "nurse1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "2001",
-                "attributes": ["nurse", "emergency"]
-            },
-            {
-                "username": "head_nurse1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "2002",
-                "attributes": ["head_nurse"]
-            },
-            {
-                "username": "patient1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "3001",
-                "attributes": ["patient"]
-            },
-            {
-                "username": "researcher1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "4001",
-                "attributes": ["researcher", "cardiology"]
-            },
-            {
-                "username": "accountant1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "5001",
-                "attributes": ["accountant"]
-            },
-            {
-                "username": "pharmacist1",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "6001",
-                "attributes": ["pharmacist"]
-            },
-            {
-                "username": "admin",
-                "password": hashlib.sha256("password123".encode()).hexdigest(),
-                "user_id": "0001",
-                "attributes": ["admin"]
-            }
-        ]
-        users_collection.insert_many(sample_users)
-        print("Sample users created successfully.")
-    else:
-        print("Sample users already exist in the database.")
+import jwt
+from Crypto.Cipher import AES
+from charm.toolbox.pairinggroup import PairingGroup
+from charm.schemes.abenc.abenc_bsw07 import CPabe_BSW07
+from charm.core.engine.util import objectToBytes, bytesToObject
+import time
+class Hash:
+    def hash_password(password):
+        """Hash a password using SHA-256"""
+        if type(password) != type(b''):
+            password = password.encode()
+        return hashlib.sha256(password).hexdigest()
+    
+class MyAES:
+    def __init__(self):
+        self.key = open("./keystore/aes.key", "rb").read()
+    
+    def encrypt(self, data):
+        if type(data) != type(b''):
+            data = data.encode()
         
-def authenticate_user(username, password):
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    user = users_collection.find_one({"username": username.strip(), "password": hashed_password})
-    return user
+        cipher = AES.new(self.key, AES.MODE_GCM)
+        ciphertext, tag = cipher.encrypt_and_digest(data)
+        return cipher.nonce + tag + ciphertext
+    
+    def decrypt(self, data):
+        ciphert = AES.new(self.key, AES.MODE_GCM, nonce=data[:16])
+        tag = data[16:32]
+        ciphertext = data[32:]
+        
+        return ciphert.decrypt_and_verify(ciphertext, tag)
+    
+class ABE:
+    def __init__ (self):
+        self.group = PairingGroup('SS512')
+        self.cpabe = CPabe_BSW07(self.group)
+    
+    def setup(self):
+        return self.cpabe.setup()
+    # Lay masterpublic key
+    def getMasterPublickey(self):
+        aes = MyAES()
+        with open("./opt/pk", "rb") as f:
+            pk = aes.decrypt(f.read())
+        return pk
+    # Generate DecryptionKey for user
+    def genDecryptionKey(self, attribute: list):
+        aes = MyAES()
+        self.pk = bytesToObject(self.getMasterPublickey(), self.group)
+        with open("./opt/mk", "rb") as f:
+            tmp = aes.decrypt(f.read())
+            self.mk = bytesToObject(tmp, self.group)
+        
+        dk = self.cpabe.keygen(self.pk, self.mk, attribute)
+        return objectToBytes(dk, self.group)
+        
+class MyJWT:
+    def __init__(self):
+        with open("./keystore/jwt.key", "rb") as f:
+            encrypted_key = f.read()
+            aes = MyAES()
+            self.secret_key = aes.decrypt(encrypted_key).decode()
+    def encode(self, attribute, user_id):
+        exptime = str(round(time.time()) + 3600)
+        payload = {
+            'user_id': user_id,
+            'attribute': attribute,
+            'exp': exptime
+        }
+        enc_token = jwt.encode(payload, self.secret_key, algorithm='EdDSA')
+        return enc_token
+    
+    
+            

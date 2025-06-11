@@ -5,34 +5,33 @@ from charm.toolbox.pairinggroup import PairingGroup
 from charm.schemes.abenc.abenc_bsw07 import CPabe_BSW07
 from charm.core.engine.util import objectToBytes, bytesToObject
 import json
+import os
+from process import MyAES, ABE
+from Crypto.PublicKey import ECC
 
-gen_keys_api = Blueprint('gen_keys_api', __name__)
+aes_key = os.urandom(64)
 
-# Set up keys: tao master public key va master key cho CP-ABE
-group = PairingGroup('SS512')
-cpabe = CPabe_BSW07(group)
-(master_public_key, master_secret_key) = cpabe.setup()
+with open("./keystore/aes.key", "wb") as f:
+    f.write(aes_key)
 
-# Nhan vao public key va truong thuoc tinh 
-@gen_keys_api.route('/get_keys', methods=['POST'])
-def get_keys():
-    data = request.json
-    if not data or 'attributes' not in data:
-        return "Invalid request", 400
-    try:
-        attributes = data['attributes']
-        # Tao decryption key dua tren cac thuoc tinh cua nguoi dung va gui den nguoi dung
-        dk_key = cpabe.keygen(master_public_key, master_secret_key, attributes)
+pairinggroup = PairingGroup('SS512')
+abe = ABE()
+pk, mk = abe.setup()
 
+aes = MyAES()
+with open("./keystore/pk.enc", "wb") as f:
+    f.write(aes.encrypt(objectToBytes(pk, pairinggroup)))
 
-        # chuyen doi cac keys thanh bytes de gui qua HTTP
-        pk_bytes = objectToBytes(master_public_key, group)
-        dk_bytess = objectToBytes(dk_key, group)
-        
-        return jsonify({
-            'pk_bytes': pk_bytes.decode(),
-            'dk_bytes': dk_bytess.decode()
-        }), 200
-    except Exception as e:
-        return str(e), 500
-        
+with open("./keystore/mk.enc", "wb") as f:
+    f.write(aes.encrypt(objectToBytes(mk, pairinggroup)))
+    
+private_key = ECC.generate(curve="ed25519")
+public_key = private_key.public_key()
+
+private_key_pem = private_key.export_key(format='PEM')
+public_key_pem = public_key.export_key(format='PEM')
+
+with open("./keystore/private_key.pem", "wb") as f:
+    f.write(aes.encrypt(private_key_pem))
+with open("./keystore/public_key.pem", "wb") as f:
+    f.write(public_key_pem.encode())
