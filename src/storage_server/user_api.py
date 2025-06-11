@@ -35,7 +35,7 @@ def DBConnect():
             'user_id': '0001',
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
-            'attributes': ['admin'],
+            'attributes': '{"ATTR": ["admin"]}',
         }
         collection.insert_one(admin_user)
     

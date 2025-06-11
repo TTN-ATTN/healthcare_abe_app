@@ -5,7 +5,7 @@ from login_api import login_api
 from auth_api import auth_api
 
 app = Flask(__name__)
-# app.secret_key = os.urandom(32).hex()
+app.secret_key = os.urandom(32).hex()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 

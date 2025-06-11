@@ -15,7 +15,7 @@ def login():
     if (not username) or (not password):
         return "Missing username or password", 400
     
-    response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/get_user_info'), params={'username': username})
+    response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/get_user_info'), data={'username': username})
     
     if (response.status_code != 200):
         return "User not found", 404
@@ -30,11 +30,11 @@ def login():
     session['username'] = username
     
     if session['username'] != 'admin':
-        attributes = user_info['attributes']
+        attributes = bytes.fromhex(user_info['attributes'])
         aes = MyAES()
         attributes = json.loads(aes.decrypt(attributes).decode())
     else:
-        attributes = json.loads(user_info['attributes'])
+        attributes = json.loads(user_info.get('attributes'))
 
     session['attributes'] = attributes['ATTR']
     
