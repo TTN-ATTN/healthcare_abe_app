@@ -60,7 +60,7 @@ class ABE:
         
 class MyJWT:
     def __init__(self):
-        with open("./keystore/jwt.key", "rb") as f:
+        with open("./keystore/jwt_priv_key.pem", "rb") as f:
             encrypted_key = f.read()
             aes = MyAES()
             self.secret_key = aes.decrypt(encrypted_key).decode()

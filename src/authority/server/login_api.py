@@ -41,7 +41,7 @@ def login():
     if (session['attributes'] == 'admin'):
         session['username'] = 'admin'
     else:
-        return jsonify({'user_id': session['user_id'], 'attributes': session['attributes']}), 200
+        return jsonify({'user_id': session['user_id'], 'attributes': attributes['ATTR']}), 200
         
 
 

@@ -34,7 +34,7 @@ def check_token(f):
             }), 401
 
         try:
-            with open('./keystore/public_key.pem', 'rb') as f:
+            with open('./keystore/jwt_priv_key.pem', 'rb') as f:
                 public_key = f.read()
             data = jwt.decode(token, public_key, algorithms=['EdDSA'])
 

@@ -32,10 +32,10 @@ def get_keys():
 
 @auth_api.route('/token', methods=['POST'])
 def get_token():
-    if 'user_id' not in session:
-        return "Unauthorized", 401
-    if "username" not in session:
-        return "Unauthorized", 401
+    # if 'user_id' not in session:
+    #     return "Unauthorized", 401
+    # if "username" not in session:
+    #     return "Unauthorized", 401
     data = request.json
     if not data:
         return "Invalid request", 400

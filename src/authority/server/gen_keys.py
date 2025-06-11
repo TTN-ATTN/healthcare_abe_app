@@ -31,7 +31,7 @@ public_key = private_key.public_key()
 private_key_pem = private_key.export_key(format='PEM')
 public_key_pem = public_key.export_key(format='PEM')
 
-with open("./keystore/private_key.pem", "wb") as f:
+with open("./keystore/jwt_priv_key.pem", "wb") as f:
     f.write(aes.encrypt(private_key_pem))
-with open("./keystore/public_key.pem", "wb") as f:
+with open("./keystore/jwt_pub_key.pem", "wb") as f:
     f.write(public_key_pem.encode())

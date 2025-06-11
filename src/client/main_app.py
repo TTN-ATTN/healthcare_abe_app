@@ -45,7 +45,7 @@ class HealthcareApp:
                         'attributes': user_data.get('attributes', [])
                     },
                     headers={'Content-Type': 'application/json'},
-                    timeout=5
+                    timeout=15
                 )
                 
                 if token_response.status_code == 200:
