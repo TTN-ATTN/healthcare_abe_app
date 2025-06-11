@@ -27,13 +27,27 @@ def verify_token():
 @auth_api.route('/token', methods=['POST'])
 def get_token():
     data = request.json
-    if not data or 'user_id' not in data:
+    if not data:
         return "Invalid request", 400
     
+    user_id = data.get('user_id')
+    attributes = data.get('attributes')
+    
+    if not user_id:
+        return "Missing user_id", 400
+    if not attributes:
+        return "Missing attributes", 400
+    
+    # Convert attributes to string format for JWT
+    if isinstance(attributes, list):
+        attributes_str = str(attributes)
+    else:
+        attributes_str = str(attributes)
+    
     token = jwt.encode({
-        'user_id': data['user_id'],
-        'attributes': str(data.get('attributes')), # Nen có một giải pháp an toàn để lưu trữ attributes đó là enc nó lại
+        'user_id': str(user_id),  # Ensure user_id is string
+        'attributes': attributes_str,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
     
-    return token, 200
+    return jsonify({'token': token}), 200
