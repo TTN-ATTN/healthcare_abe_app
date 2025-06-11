@@ -10,18 +10,18 @@ auth_api = Blueprint('auth_api', __name__)
 
 @auth_api.route('/get_keys', methods=['POST'])
 def get_keys():
-    if 'ID' not in session:
+    if 'user_id' not in session:
         return "Unauthorized", 401
     
     if "username" not in session:
         return "Unauthorized", 401
     
     post_data = request.json
-    attribute = post_data['attribute']
+    attributes = post_data['attributes']
     
     abe = ABE()
     pk = abe.getMasterPublickey()
-    dk = abe.genDecryptionKey(literal_eval(attribute)).decode()
+    dk = abe.genDecryptionKey(literal_eval(attributes)).decode()
     
     reponse = {
         'pk_key': pk,
@@ -32,7 +32,7 @@ def get_keys():
 
 @auth_api.route('/token', methods=['POST'])
 def get_token():
-    if 'ID' not in session:
+    if 'user_id' not in session:
         return "Unauthorized", 401
     if "username" not in session:
         return "Unauthorized", 401

@@ -44,18 +44,18 @@ class ABE:
     # Lay masterpublic key
     def getMasterPublickey(self):
         aes = MyAES()
-        with open("./opt/pk", "rb") as f:
+        with open("./keystore/pk.enc", "rb") as f:
             pk = aes.decrypt(f.read())
         return pk
     # Generate DecryptionKey for user
-    def genDecryptionKey(self, attribute: list):
+    def genDecryptionKey(self, attributes: list):
         aes = MyAES()
         self.pk = bytesToObject(self.getMasterPublickey(), self.group)
-        with open("./opt/mk", "rb") as f:
+        with open("./keystore/mk.enc", "rb") as f:
             tmp = aes.decrypt(f.read())
             self.mk = bytesToObject(tmp, self.group)
         
-        dk = self.cpabe.keygen(self.pk, self.mk, attribute)
+        dk = self.cpabe.keygen(self.pk, self.mk, attributes)
         return objectToBytes(dk, self.group)
         
 class MyJWT:
@@ -64,11 +64,11 @@ class MyJWT:
             encrypted_key = f.read()
             aes = MyAES()
             self.secret_key = aes.decrypt(encrypted_key).decode()
-    def encode(self, attribute, user_id):
+    def encode(self, attributes, user_id):
         exptime = str(round(time.time()) + 3600)
         payload = {
             'user_id': user_id,
-            'attribute': attribute,
+            'attributes': attributes,
             'exp': exptime
         }
         enc_token = jwt.encode(payload, self.secret_key, algorithm='EdDSA')

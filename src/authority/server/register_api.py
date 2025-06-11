@@ -12,26 +12,26 @@ register_api = Blueprint('login_api', __name__)
 def register():
     if 'username' not in session['username']:
         return redirect('/login')  
-    if 'admin' not in session['username'] and 'administrator' not in session['attribute']:
+    if 'admin' not in session['username'] and 'administrator' not in session['attributes']:
         return redirect('/login')
     
     username = request.form.get('username')
     password = request.form.get('password')
-    attribute = request.form.get('attribute')
+    attributes = request.form.get('attributes')
     user_id = request.form.get('user_id')
     
-    if (not username) or (not password) or (not attribute):
-        return "Missing username, password or attribute", 400
+    if (not username) or (not password) or (not attributes):
+        return "Missing username, password or attributes", 400
     
     aes = MyAES()
-    attribute = '{{"ATTR": {}}}'.format(json.dumps([attr.strip() for attr in attribute.split(',')]))
-    enc_attribute = aes.encrypt(attribute).hex()
+    attributes = '{{"ATTR": {}}}'.format(json.dumps([attr.strip() for attr in attributes.split(',')]))
+    enc_attribute = aes.encrypt(attributes).hex()
     
     data = {
         'username': username,
         'password': Hash.hash_password(password),
         'user_id': user_id,
-        'attribute': enc_attribute
+        'attributes': enc_attribute
     }
     
     response = requests.post(urljoin(CLOUD_STORAGE_URL, '/api/user'), json=data)

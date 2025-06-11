@@ -25,23 +25,23 @@ def login():
     if user_info["hash_passwd"] != Hash.hash_password(password):
         return "Invalid password", 401
     
-    # Dang nhap thanh cong, thi lay thong tin attribute cua user de tao userkey (description key)
-    session['ID'] = user_info['ID']
+    # Dang nhap thanh cong, thi lay thong tin attributes cua user de tao userkey (description key)
+    session['user_id'] = user_info['user_id']
     session['username'] = username
     
-    if session['user'] != 'admin':
-        attribute = user_info['attribute']
+    if session['username'] != 'admin':
+        attributes = user_info['attributes']
         aes = MyAES()
-        attribute = json.loads(aes.decrypt(attribute).decode())
+        attributes = json.loads(aes.decrypt(attributes).decode())
     else:
-        attribute = json.loads(user_info['attribute'])
+        attributes = json.loads(user_info['attributes'])
 
-    session['attribute'] = attribute['ATTR']
+    session['attributes'] = attributes['ATTR']
     
-    if (session['attribute'] == 'administrator'):
-        session['user'] = 'admin'
+    if (session['attributes'] == 'admin'):
+        session['username'] = 'admin'
     else:
-        return jsonify({'ID': session['ID'], 'attribute': session['attribute']}), 200
+        return jsonify({'user_id': session['user_id'], 'attributes': session['attributes']}), 200
         
 
 

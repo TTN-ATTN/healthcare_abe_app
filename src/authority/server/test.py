@@ -12,53 +12,6 @@ from datetime import datetime
 AUTHORITY_SERVER = "http://127.0.0.1:5000"
 STORAGE_SERVER = "http://127.0.0.1:8000"
 
-def test_authority_endpoints():
-    """Test all authority server endpoints"""
-    print("🔍 Testing Authority Server Endpoints...")
-    
-    endpoints = [
-        ("/login", "POST"),
-        ("/logout", "POST"),
-        ("/token", "POST"),
-        ("/verify_token", "POST"),
-        ("/get_keys", "POST")
-    ]
-    
-    for endpoint, method in endpoints:
-        try:
-            if method == "GET":
-                response = requests.get(f"{AUTHORITY_SERVER}{endpoint}", timeout=5)
-            else:
-                response = requests.post(f"{AUTHORITY_SERVER}{endpoint}", timeout=5)
-            
-            print(f"  {method} {endpoint}: {response.status_code}")
-        except Exception as e:
-            print(f"  {method} {endpoint}: ERROR - {str(e)}")
-
-def test_storage_endpoints():
-    """Test all storage server endpoints"""
-    print("\n🔍 Testing Storage Server Endpoints...")
-    
-    endpoints = [
-        ("/health", "GET"),
-        ("/api/profile", "GET"),
-        ("/api/users", "GET"),
-        ("/api/health_records", "GET"),
-        ("/api/medicine_records", "GET"),
-        ("/api/research_records", "GET"),
-    ]
-    
-    for endpoint, method in endpoints:
-        try:
-            if method == "GET":
-                response = requests.get(f"{STORAGE_SERVER}{endpoint}", timeout=5)
-            else:
-                response = requests.post(f"{STORAGE_SERVER}{endpoint}", timeout=5)
-            
-            print(f"  {method} {endpoint}: {response.status_code}")
-        except Exception as e:
-            print(f"  {method} {endpoint}: ERROR - {str(e)}")
-
 def test_complete_workflow():
     """Test complete workflow from login to data access"""
     print("\n🔄 Testing Complete Workflow...")
@@ -77,7 +30,7 @@ def test_complete_workflow():
         return
     
     user_data = login_response.json()
-    print(f"    User ID: {user_data.get('user_id', 'Not found')}")
+    print(f"    User user_id: {user_data.get('user_id', 'Not found')}")
     print(f"    Attributes: {user_data.get('attributes', [])}")
     
     # Step 2: Get Token
@@ -114,7 +67,7 @@ def test_complete_workflow():
         data = storage_response.json()
         print(f"    Retrieved {data.get('count', 0)} health records")
         for record in data.get('records', []):
-            print(f"\n      Record ID: {record.get('record_id')} - Patient ID: {record.get('patient_id')}\n")
+            print(f"\n      Record user_id: {record.get('record_id')} - Patient user_id: {record.get('patient_id')}\n")
     else:
         print(f" ❌ Storage access failed: {storage_response.text[:200]}")
 
@@ -145,8 +98,6 @@ def test_individual_users():
         except Exception as e:
             print(f"    ❌ Error: {str(e)}")
 
-if __name__ == "__main__":
-    test_authority_endpoints()
-    test_storage_endpoints() 
+if __name__ == "__main__": 
     test_complete_workflow()
     test_individual_users()
