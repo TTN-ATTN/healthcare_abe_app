@@ -14,7 +14,7 @@ class UploadUI:
         upload_frame = ttk.Frame(self.parent)
         upload_frame.pack(expand=True, fill="both", padx=10, pady=10)
         
-        ttk.Label(upload_frame, text="Patient ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(upload_frame, text="Patient user_id").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.user_id_entry = ttk.Entry(upload_frame, width=30)
         self.user_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
@@ -68,7 +68,7 @@ class UpdateUI:
         update_frame = ttk.Frame(self.parent)
         update_frame.pack(expand=True, fill="both", padx=10, pady=10)
         
-        ttk.Label(update_frame, text="User ID").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(update_frame, text="User user_id").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.user_id_entry = ttk.Entry(update_frame, width=30)
         self.user_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
@@ -84,7 +84,7 @@ class UpdateUI:
         self.record_type_dropdown.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
         self.record_type_dropdown.current(0)
         
-        ttk.Label(update_frame, text="Record ID").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(update_frame, text="Record user_id").grid(row=2, column=0, padx=5, pady=5, sticky="w")
         self.record_id_entry = ttk.Entry(update_frame, width=30)
         self.record_id_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
         

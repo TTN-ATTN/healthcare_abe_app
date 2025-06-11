@@ -36,7 +36,6 @@ def DBConnect():
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
             'attributes': ['admin'],
-            'role': 'administrator'
         }
         collection.insert_one(admin_user)
     
@@ -58,7 +57,7 @@ def serialize_user(user):
     return user
 
 
-@user_api.route('/get_user_info', method=['POST'])
+@user_api.route('/get_user_info', methods=['POST'])
 def get_user_info():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -195,7 +194,6 @@ def reset_users(current_user):
             'username': 'admin',
             'hash_password': hashlib.sha256('admin123'.encode()).hexdigest(),
             'attributes': ['admin', 'super_user'],
-            'role': 'administrator'
         }
         users_collection.insert_one(admin_user)
         
