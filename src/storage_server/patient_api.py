@@ -43,20 +43,17 @@ def check_record_access(record_type, action='view'):
     Check if user has access to specific record type and action
     """
     def decorator(f):
-        def decorated_function(*args, **kwargs):  # Changed from 'decorated' to 'decorated_function'
+        def decorated_function(*args, **kwargs):
             current_user = kwargs.get('current_user')
             if not current_user:
                 return jsonify({'error': 'User information not found'}), 401
             
-            user_attributes = current_user.get("expanded_attributes", [])
+            user_attributes = current_user.get("attributes", [])
 
-            # Determine required attributes based on action
             if action == 'view':
                 required_attrs = VIEW_POLICIES.get(record_type, [])
             elif action == 'update':
                 required_attrs = UPDATE_POLICIES.get(record_type, [])
-            elif action == 'delete':
-                required_attrs = DELETE_POLICIES.get(record_type, [])
             else:
                 return jsonify({'error': 'Invalid action'}), 400
             
