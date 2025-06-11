@@ -15,7 +15,7 @@ def login():
     user = authenticate_user(username, password)
     
     if user:
-        user['_id'] = str(user['_id'])  # Convert ObjectId to string
+        user['user_id'] = str(user['user_id'])  # Convert ObjectId to string
         session['user'] = user
         return jsonify(user), 200
     else:

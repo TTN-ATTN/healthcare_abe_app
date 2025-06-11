@@ -43,11 +43,11 @@ class TestLoginAPI:
             user_data = response.json()
             assert 'username' in user_data
             assert user_data['username'] == user['username']
-            assert '_id' in user_data
+            assert 'user_id' in user_data
             print(f"✓ Login successful for {user['username']}")
             
             # Print user data for debugging
-            print(f"  User ID: {user_data.get('_id')}")
+            print(f"  User user_id: {user_data.get('user_id')}")
             print(f"  Attributes: {user_data.get('attributes', [])}")
     
     def test_login_missing_username(self):
@@ -150,14 +150,14 @@ class TestLoginAPI:
             
             print(f" User Data Retrieved:")
             print(f"   Username: {user_data.get('username')}")
-            print(f"   User ID: {user_data.get('_id')}")
+            print(f"   User user_id: {user_data.get('user_id')}")
             print(f"   Attributes: {user_data.get('attributes', [])}")
             
             # Test token generation
             token_response = requests.post(
                 self.token_url,
                 json={
-                    '_id': user_data['_id'],
+                    'user_id': user_data['user_id'],
                     'attributes': user_data.get('attributes', [])
                 },
                 headers={'Content-Type': 'application/json'}
@@ -245,7 +245,7 @@ class TestLoginAPI:
         
         print(f"   ✓ Login successful")
         print(f"    User: {user_data.get('username')}")
-        print(f"    ID: {user_data.get('_id')}")
+        print(f"    user_id: {user_data.get('user_id')}")
         print(f"    Attributes: {user_data.get('attributes', [])}")
         
         # Step 2: Get token
@@ -253,7 +253,7 @@ class TestLoginAPI:
         token_response = requests.post(
             self.token_url,
             json={
-                '_id': user_data['_id'],
+                'user_id': user_data['user_id'],
                 'attributes': user_data.get('attributes', [])
             },
             headers={'Content-Type': 'application/json'},
@@ -270,7 +270,7 @@ class TestLoginAPI:
         try:
             payload = jwt.decode(token, options={"verify_signature": False})
             print(f"     Token contains:")
-            print(f"      - User ID: {payload.get('user_id')}")
+            print(f"      - User user_id: {payload.get('user_id')}")
             print(f"      - Attributes: {payload.get('attributes')}")
             print(f"      - Expires: {datetime.datetime.fromtimestamp(payload.get('exp', 0))}")
         except Exception as e:
@@ -371,7 +371,7 @@ def test_all_user_tokens():
             token_response = requests.post(
                 f"{BASE_URL}/token",
                 json={
-                    '_id': user_data['_id'],
+                    'user_id': user_data['user_id'],
                     'attributes': user_data.get('attributes', [])
                 },
                 headers={'Content-Type': 'application/json'}
@@ -383,7 +383,7 @@ def test_all_user_tokens():
                 
                 print(f"   ✓ Token generated successfully")
                 print(f"   User: {user_data.get('username')}")
-                print(f"   ID: {user_data.get('_id')}")
+                print(f"   user_id: {user_data.get('user_id')}")
                 print(f"   Attributes: {user_data.get('attributes', [])}")
                 print(f"   Token: {token}")
                 

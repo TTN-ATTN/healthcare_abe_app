@@ -27,11 +27,11 @@ def verify_token():
 @auth_api.route('/token', methods=['POST'])
 def get_token():
     data = request.json
-    if not data or '_id' not in data:
+    if not data or 'user_id' not in data:
         return "Invalid request", 400
     
     token = jwt.encode({
-        'user_id': data['_id'],
+        'user_id': data['user_id'],
         'attributes': str(data.get('attributes')), # Nen có một giải pháp an toàn để lưu trữ attributes đó là enc nó lại
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }, SECRET_KEY, algorithm='HS256')
