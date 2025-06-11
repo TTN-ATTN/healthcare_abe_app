@@ -51,4 +51,4 @@ def get_token():
     myjwt = MyJWT()
     token = myjwt.encode(attributes, user_id)
     
-    return token, 200
+    return jsonify({"token": token}), 200
