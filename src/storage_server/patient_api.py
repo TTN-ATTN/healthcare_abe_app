@@ -94,28 +94,16 @@ def get_health_records(current_user):
         
         # Patients can only see their own records
         if 'patient' in user_attributes and 'doctor' not in user_attributes and 'nurse' not in user_attributes:
-            query = {'patient_id': current_user['user_id']}
-        elif 'doctor' in user_attributes or 'nurse' in user_attributes:
-            if 'patient_name' in request.args:
-                query = {'patient_name': request.args.get('patient_name')}
-            elif 'patient_id' in request.args:
-                query = {'patient_id': request.args.get('patient_id')}
-            elif 'patient_name' and 'patient_id' in request.args:
-                query = {
-                    'patient_name': request.args.get('patient_name'),
-                    'patient_id': request.args.get('patient_id')
-                }
-            else:
-                query = {}
+            query = {'patient_id': current_user['user_id'], 'patient_name': current_user.get('username')}
+        else:
+            query = {'patient_id': current_user['patient_id'], 'patient_name': current_user.get('patient_name')}
         
         records = list(collection.find(query))
         
-        # Serialize records for JSON response
         serialized_records = [serialize_record(record) for record in records]
         
         return jsonify({
             'records': serialized_records,
-            'count': len(serialized_records),
             'accessed_by': current_user['user_id'],
             'attributes': user_attributes
         }), 200

@@ -128,7 +128,6 @@ def create_user(current_user):
             'username': data['username'],
             'hash_password': hashlib.sha256(data['password'].encode()).hexdigest(),
             'attributes': data['attributes'],
-            'role': data.get('role', 'user'),
             'created_by': current_user['user_id']
         }
         
