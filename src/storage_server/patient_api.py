@@ -27,25 +27,15 @@ db = DBConnect()
 VIEW_POLICIES = {
     'health_record': ['doctor', 'nurse', 'patient'],
     'medicine_record': ['doctor', 'pharmacist', 'patient'],
-    'financial_record': ['accountant', 'admin'],
+    'financial_record': ['accountant'],
     'research_record': ['doctor', 'researcher'],
-    'emergency_record': ['doctor', 'nurse', 'emergency'],
 }
 
 UPDATE_POLICIES = {
     'health_record': ['doctor', 'nurse'],
     'medicine_record': ['doctor', 'pharmacist'],
-    'financial_record': ['accountant', 'admin'],
+    'financial_record': ['accountant'],
     'research_record': ['researcher', 'doctor'],
-    'emergency_record': ['doctor', 'nurse'],
-}
-
-DELETE_POLICIES = {
-    'health_record': ['doctor', 'admin'],
-    'medicine_record': ['doctor', 'admin'],
-    'financial_record': ['accountant', 'admin'],
-    'research_record': ['admin'],
-    'emergency_record': ['admin'],
 }
 
 def check_record_access(record_type, action='view'):
@@ -100,12 +90,10 @@ def get_health_records(current_user):
         if 'patient' in user_attributes and 'doctor' not in user_attributes and 'nurse' not in user_attributes:
             query = {'patient_id': current_user['user_id']}
         else:
-            # Doctors and nurses can see all records
             query = {}
         
         records = list(collection.find(query))
         
-        # Convert ObjectId to string
         for record in records:
             if '_id' in record:
                 record['_id'] = str(record['_id'])
@@ -215,52 +203,9 @@ def get_research_records(current_user):
     except Exception as e:
         return jsonify({'error': 'Failed to retrieve research records', 'message': str(e)}), 500
 
-@patient_api.route('/emergency_access', methods=['POST'])
-@check_token
-@check_permission(['doctor', 'nurse', 'emergency'])
-def emergency_access(current_user):
-    """Emergency access to patient records"""
-    try:
-        data = request.json
-        patient_id = data.get('patient_id')
-        
-        if not patient_id:
-            return jsonify({'error': 'Patient ID is required'}), 400
-        
-        # Log emergency access
-        emergency_log = db['emergency_access_log']
-        log_entry = {
-            'patient_id': patient_id,
-            'accessed_by': current_user['user_id'],
-            'access_time': datetime.datetime.utcnow(),
-            'user_attributes': current_user['attributes'],
-            'reason': data.get('reason', 'Emergency access')
-        }
-        emergency_log.insert_one(log_entry)
-        
-        # Get all patient records
-        health_records = list(db['health_records'].find({'patient_id': patient_id}))
-        medicine_records = list(db['medicine_records'].find({'patient_id': patient_id}))
-        
-        # Convert ObjectId to string
-        for record in health_records + medicine_records:
-            if '_id' in record:
-                record['_id'] = str(record['_id'])
-        
-        return jsonify({
-            'message': 'Emergency access granted',
-            'patient_id': patient_id,
-            'health_records': health_records,
-            'medicine_records': medicine_records,
-            'access_logged': True
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': 'Emergency access failed', 'message': str(e)}), 500
-
 @patient_api.route('/create_sample_data', methods=['POST'])
 @check_token
-@check_permission(['admin'])
+@check_permission(['admin', 'doctor'])
 def create_sample_data(current_user):
     """Create sample patient data for testing"""
     try:

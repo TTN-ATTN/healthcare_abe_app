@@ -28,7 +28,6 @@ def home():
             'patient_records': '/api/health_records',
             'medicine_records': '/api/medicine_records',
             'research_records': '/api/research_records',
-            'emergency_access': '/api/emergency_access'
         },
         'authentication': 'JWT tokens from Authority Server (port 5000)',
         'note': 'All endpoints require valid JWT token from authority server'

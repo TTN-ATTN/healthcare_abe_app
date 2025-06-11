@@ -23,9 +23,7 @@ def get_expanded_attributes(user_attributes):
         'pediatric_doctor': ['doctor'],
         'surgery_doctor': ['doctor'],
         'oncology_doctor': ['doctor'],
-        'emergency_doctor': ['doctor'],
-        
-        'emergency_nurse': ['nurse'],
+
         'head_nurse': ['nurse', 'administrator'],
         'surgical_nurse': ['nurse'],
         'pediatric_nurse': ['nurse'],
