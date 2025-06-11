@@ -113,6 +113,8 @@ def test_complete_workflow():
         print(" ✅ Complete workflow successful!")
         data = storage_response.json()
         print(f"    Retrieved {data.get('count', 0)} health records")
+        for record in data.get('records', []):
+            print(f"\n      Record ID: {record.get('record_id')} - Patient ID: {record.get('patient_id')}\n")
     else:
         print(f" ❌ Storage access failed: {storage_response.text[:200]}")
 
