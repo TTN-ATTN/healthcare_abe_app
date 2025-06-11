@@ -1,4 +1,4 @@
-# cloud_storage/server/main.py
+# storage_server/main.py
 from flask import Flask, jsonify
 from user_api import user_api
 from patient_api import patient_api

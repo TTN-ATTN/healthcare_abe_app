@@ -1,4 +1,4 @@
-# cloud_storage/server/patient_api.py
+# storage_server/patient_api.py
 from flask import Blueprint, request, jsonify
 from auth import check_token, check_permission
 from pymongo import MongoClient
@@ -58,8 +58,8 @@ def check_record_access(record_type, action='view'):
             if not current_user:
                 return jsonify({'error': 'User information not found'}), 401
             
-            user_attributes = current_user.get('attributes', [])
-            
+            user_attributes = current_user.get("expanded_attributes", [])
+
             # Determine required attributes based on action
             if action == 'view':
                 required_attrs = VIEW_POLICIES.get(record_type, [])
@@ -165,7 +165,7 @@ def get_medicine_records(current_user):
         user_attributes = current_user.get('attributes', [])
         
         # Patients can only see their own records
-        if 'patient' in user_attributes and not any(attr in ['doctor', 'pharmacist'] for attr in user_attributes):
+        if 'patient' in user_attributes and not any(attr in ['pharmacist'] for attr in user_attributes):
             query = {'patient_id': current_user['user_id']}
         else:
             query = {}
@@ -190,7 +190,7 @@ def get_medicine_records(current_user):
 @check_token
 @check_record_access('research_record', 'view')
 def get_research_records(current_user):
-    """Get research records - doctors and researchers only"""
+    """Get research records - researchers only"""
     try:
         collection = db['research_records']
         
@@ -260,7 +260,7 @@ def emergency_access(current_user):
 
 @patient_api.route('/create_sample_data', methods=['POST'])
 @check_token
-@check_permission(['admin', 'doctor'])
+@check_permission(['admin'])
 def create_sample_data(current_user):
     """Create sample patient data for testing"""
     try:

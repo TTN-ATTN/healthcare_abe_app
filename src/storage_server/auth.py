@@ -1,3 +1,4 @@
+# storage_server/auth.py
 from flask import request, jsonify
 from functools import wraps
 import jwt
@@ -5,10 +6,51 @@ import os
 from ast import literal_eval
 import requests
 
-# This should match the SECRET_KEY from your authority server's auth_api.py
-# In production, this should be shared securely between services
 SECRET_KEY = "shared_secret_key_between_authority_and_storage"
 AUTHORITY_SERVER_URL = "http://127.0.0.1:5000"
+
+def get_expanded_attributes(user_attributes):
+    """
+    Expand specialized roles to include their parent roles
+    This creates a hierarchical permission system
+    """
+    expanded = set(user_attributes.copy())
+    
+    # Define role hierarchies - specialized roles inherit from general roles
+    role_hierarchy = {
+        'neurology_doctor': ['doctor'],
+        'cardiology_doctor': ['doctor'],
+        'pediatric_doctor': ['doctor'],
+        'surgery_doctor': ['doctor'],
+        'oncology_doctor': ['doctor'],
+        'emergency_doctor': ['doctor'],
+        
+        'emergency_nurse': ['nurse'],
+        'head_nurse': ['nurse', 'administrator'],
+        'surgical_nurse': ['nurse'],
+        'pediatric_nurse': ['nurse'],
+        
+        'senior_pharmacist': ['pharmacist'],
+        'clinical_pharmacist': ['pharmacist'],
+        
+        'lead_researcher': ['researcher', 'administrator'],
+        'clinical_researcher': ['researcher'],
+        
+        'senior_accountant': ['accountant'],
+        'financial_manager': ['accountant', 'administrator'],
+        
+        'system_admin': ['administrator'],
+        'medical_admin': ['administrator'],
+        
+        # Add more specialized roles as needed
+    }
+    
+    # Expand attributes based on hierarchy
+    for attr in user_attributes:
+        if attr in role_hierarchy:
+            expanded.update(role_hierarchy[attr])
+    
+    return list(expanded)
 
 def check_token(f):
     """
@@ -42,9 +84,15 @@ def check_token(f):
             data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             
             # Extract user information from token
+            user_attributes = literal_eval(data['attributes']) if isinstance(data['attributes'], str) else data['attributes']
+            
+            # Expand attributes using hierarchical system
+            expanded_attributes = get_expanded_attributes(user_attributes)
+            
             current_user = {
                 'user_id': data['user_id'],
-                'attributes': literal_eval(data['attributes']) if isinstance(data['attributes'], str) else data['attributes'],
+                'attributes': user_attributes,  # Original attributes
+                'expanded_attributes': expanded_attributes,  # Expanded attributes for permission checking
                 'token': token
             }
             
@@ -93,9 +141,11 @@ def extract_user_attributes(token):
     """
     try:
         data = jwt.decode(token, options={"verify_signature": False})
+        user_attributes = data.get('attributes', [])
         return {
             'user_id': data.get('user_id'),
-            'attributes': data.get('attributes', []),
+            'attributes': user_attributes,
+            'expanded_attributes': get_expanded_attributes(user_attributes),
             'exp': data.get('exp')
         }
     except:
@@ -104,27 +154,43 @@ def extract_user_attributes(token):
 def check_permission(required_attributes):
     """
     Decorator to check if user has required attributes for specific actions
+    Now uses expanded attributes for hierarchical permission checking
     """
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            # This assumes check_token was already applied
             current_user = kwargs.get('current_user')
             if not current_user:
                 return jsonify({'error': 'User information not found'}), 401
             
-            user_attributes = current_user.get('attributes', [])
+            # Use expanded attributes for permission checking
+            user_expanded_attributes = current_user.get('expanded_attributes', [])
+            print(f"\n\nChecking permissions for user: {current_user['user_id']}, required: {required_attributes}, expanded: {user_expanded_attributes}\n\n")
+            user_original_attributes = current_user.get('attributes', [])
             
-            # Check if user has any of the required attributes
-            has_permission = any(attr in user_attributes for attr in required_attributes)
+            # Check if user has any of the required attributes (using expanded attributes)
+            has_permission = any(attr in user_expanded_attributes for attr in required_attributes)
             
             if not has_permission:
                 return jsonify({
                     'error': 'Access denied!',
-                    'message': f'Required attributes: {required_attributes}',
-                    'user_attributes': user_attributes
+                    'message': f'Insufficient privileges for {f.__name__}',
+                    'required_attributes': required_attributes,
+                    'user_attributes': user_original_attributes,  # Show original for transparency
+                    'expanded_attributes': user_expanded_attributes  # Show what permissions they actually have
                 }), 403
             
             return f(*args, **kwargs)
         return decorated
     return decorator
+
+def get_user_permissions(user_attributes):
+    """
+    Utility function to get all permissions for a user
+    Useful for debugging and user interface
+    """
+    return {
+        'original_attributes': user_attributes,
+        'expanded_attributes': get_expanded_attributes(user_attributes),
+        'role_hierarchy_applied': True
+    }

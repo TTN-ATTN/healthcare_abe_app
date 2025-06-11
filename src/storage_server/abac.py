@@ -1,3 +1,4 @@
+# storage_server/abac.py
 from charm.toolbox.policytree import PolicyParser
 
 class ABAC:
@@ -9,9 +10,6 @@ class ABAC:
         'researcher': 5,
         'pharmacist': 6,
         'administrator': 7,
-        'neurology_doctor': 8,
-        'virus_researcher': 9,
-        'executive_accountant': 10,
     }
     
     '''
@@ -49,19 +47,25 @@ class ABAC:
 def checker(user_attributes, policy_keywords):
     abac = ABAC()
 
+    # Find user attributes that match any of the policy keywords
     matched_attributes = []
     for a in user_attributes:         
         for k in policy_keywords:   
             if k in a:          
                 matched_attributes.append(a)
 
+    # Prepare the final list of policy keywords to use in the policy string
     final_policy_keywords = policy_keywords.copy()
     for keyword in policy_keywords:
         for attr in matched_attributes:
+            # Ensure each keyword is included only once
             if keyword in attr and keyword not in final_policy_keywords:
                 final_policy_keywords.append(keyword)
 
+    # Convert the policy keywords to their integer representation
     converted_policy = abac.convertPolicy(' or '.join(final_policy_keywords))
+    # Convert the matched user attributes to their integer representation
     converted_attrs = abac.convertAttribute(matched_attributes)
 
+    # Check if the converted attributes satisfy the converted policy
     return abac.check(converted_attrs, converted_policy)
