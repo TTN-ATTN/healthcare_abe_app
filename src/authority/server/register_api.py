@@ -5,14 +5,14 @@ import json
 import requests
 # Rehandle finish
 CLOUD_STORAGE_URL = "http://127.0.0.1:8000"
-register_api = Blueprint('login_api', __name__)
+register_api = Blueprint('register_api', __name__)
 
         
 @register_api.route('/register', methods=['POST'])
 def register():
-    if 'username' not in session['username']:
+    if 'username' not in session:
         return redirect('/login')  
-    if 'admin' not in session['username'] and 'administrator' not in session['attributes']:
+    if 'admin' not in session['username']:
         return redirect('/login')
     
     username = request.form.get('username')

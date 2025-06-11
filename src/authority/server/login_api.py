@@ -22,7 +22,7 @@ def login():
     
     user_info = response.json()
     
-    if user_info["hash_passwd"] != Hash.hash_password(password):
+    if user_info["hash_password"] != Hash.hash_password(password):
         return "Invalid password", 401
     
     # Dang nhap thanh cong, thi lay thong tin attributes cua user de tao userkey (description key)

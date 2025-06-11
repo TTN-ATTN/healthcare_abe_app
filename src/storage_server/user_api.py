@@ -68,8 +68,8 @@ def get_user_info():
             response = {
                 'user_id': user_info['user_id'],
                 'username': user_info['username'],
-                'hash_passwd': user_info['hash_password'],
-                'attributes': user_info['attribue'],
+                'hash_password': user_info['hash_password'],
+                'attributes': user_info['attributes'],
             }
             return jsonify(response), 200
         else:

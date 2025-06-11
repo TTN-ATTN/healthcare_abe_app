@@ -6,7 +6,6 @@ import os
 from ast import literal_eval
 import requests
 
-SECRET_KEY = "shared_secret_key_between_authority_and_storage"
 AUTHORITY_SERVER_URL = "http://127.0.0.1:5000"
 
 def check_token(f):
