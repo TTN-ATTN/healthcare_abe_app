@@ -1,4 +1,4 @@
-# Buoc 1: cu authority server la setup key 
+# authority/server/gen_keys.py
 
 from flask import Blueprint, request, jsonify
 from charm.toolbox.pairinggroup import PairingGroup

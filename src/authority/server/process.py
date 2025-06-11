@@ -1,3 +1,4 @@
+# authority/server/process.py
 from pymongo import MongoClient
 import hashlib
 import os
@@ -9,6 +10,10 @@ db = client['healthcare']
 users_collection = db['users']
 
 def create_sameple_user():
+    if 'users' in db.list_collection_names():
+        db['users'].drop()
+        print("Users collection dropped successfully.")
+
     if users_collection.count_documents({}) == 0:
         sample_users = [
             {
@@ -18,10 +23,22 @@ def create_sameple_user():
                 "attribute": ["doctor", "cardiology"]
             },
             {
+                "username": "neuro1",
+                "password": hashlib.sha256("password123".encode()).hexdigest(),
+                "ID": "1002",
+                "attribute": ["neurology_doctor"]
+            },
+            {
                 "username": "nurse1",
                 "password": hashlib.sha256("password123".encode()).hexdigest(),
                 "ID": "2001",
                 "attribute": ["nurse", "emergency"]
+            },
+            {
+                "username": "head_nurse1",
+                "password": hashlib.sha256("password123".encode()).hexdigest(),
+                "ID": "2002",
+                "attribute": ["head_nurse"]
             },
             {
                 "username": "patient1",
@@ -55,5 +72,5 @@ def create_sameple_user():
         
 def authenticate_user(username, password):
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    user = users_collection.find_one({"username": username, "password": hashed_password})
+    user = users_collection.find_one({"username": username.strip(), "password": hashed_password})
     return user
